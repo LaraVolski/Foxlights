@@ -8,8 +8,8 @@ The Github repository for Foxlights code.
 ## 3) Do coyotes become habituated to Foxlights?
 
 # Packages 
-### library(nlme)
-### library(ggplot2)
+library(nlme) <br/>
+library(ggplot2)
 ### library(overlap)
 ### library(maptools)
 ### library(lubridate)
