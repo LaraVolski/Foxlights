@@ -1,0 +1,336 @@
+---
+title: "foxlights_data_analysis"
+output: html_document
+---
+# Part 1) Setting up
+
+### 1.1 Load Packages
+```{r library.packages, include = FALSE}
+library(nlme)
+library(ggplot2)
+library(overlap)
+library(maptools)
+library(lubridate)
+library(plyr)
+library(camtrapR)
+library(dplyr)
+```
+
+### 1.2 Read in record table CSV
+```{r record.table}
+record.table.all <- read.csv("record_table_0min_deltaT_2020-06-06.csv")
+```
+
+
+### 1.3 create new column for cameras by taking the folder name and reducing to first three characters
+```{r new.columns}
+record.table.all$Camera <- strtrim(record.table.all$Camera_folder, 5)
+
+record.table.all$Phase <- substr(record.table.all$Camera_folder, 7, 12)
+
+record.table.all$Foxlight <- substr(record.table.all$Camera_folder, 14, 17)
+```
+
+
+### 1.4 Set the time interval (photos that occured within 15 min will count as one detection)
+```{r fifteen.min}
+record.table.15min <- record.table.all[record.table.all$delta.time.secs >= 900 |  # because 900 seconds = 15 minutes
+                                             record.table.all$delta.time.secs == 0, ]
+```
+
+### 1.5 Import additional csv
+
+
+*metadata.raster is normally distributed. The closer to 0, the less the value deviates from the norm. 
+```{r import.csv}
+# import camera phase operation dates
+cam_operations <- read.csv("phase_operation_dates_2020.csv", header=T)
+
+# reading in metadata
+
+# metadata <- read.csv("MicrohabitatData.csv", header=T)
+metadata.raster <- read.csv("Raster_metadata_Lara.csv", header=T)
+```
+
+### 1.6 Plotting Species Richness across cameras by lat and long
+```{r species.richness.plot}
+detectionMaps(CTtable = cam_operations, 
+              recordTable = record.table.15min, 
+              stationCol = "Camera", 
+              Xcol = "Latitude", 
+              Ycol = "Longitude",
+              richnessPlot = TRUE,
+              printLabels = TRUE)
+
+# remove species that we don't care about (here, removing birds, opposum, nothing, mice, pigs, and squirrels) 
+for (species in c("2", "Bird", "DIVI", "Ghosts", "Mice", "SCOC", "SCGR", "SCNI")) {
+  record.table.15min <- record.table.15min[record.table.15min$Species != species, ]
+}
+```
+
+
+
+### RAI
+```{r RAI}
+# calculate RAI for each period
+
+# change camera, phase, and species to factor
+record.table.15min$Camera <- as.factor(record.table.15min$Camera)
+record.table.15min$Phase <- as.factor(record.table.15min$Phase)
+record.table.15min$Species <- droplevels(as.factor(record.table.15min$Species))
+
+
+# calculate number of observations of each species at each camera in each phase
+rai <- record.table.15min %>%
+  dplyr::group_by(Species, Camera, Phase, .drop = FALSE) %>%
+  dplyr::summarise(Detections = n()) 
+
+rai2 <- record.table.15min %>%
+  dplyr::group_by(Species, .drop = FALSE) %>%
+  dplyr::summarise(Detections = n())
+# merge with record table
+rai <- merge(rai, cam_operations)
+
+
+# calculate RAI
+rai$RAI <- rai$Detections / rai$Operation
+
+# remove records where camera was operating for <10 days
+for (i in 1:nrow(rai)) {
+  if(rai$Operation[i] < 10) {
+    rai$Detections[i] <- NA
+    rai$RAI[i] <- NA
+  } 
+}
+
+# join raster metadata
+rai <- left_join(rai, metadata.raster)
+
+#### now just calculate RAI at each camera, ACROSS ALL PHASES
+cam_operations.acrossphases <- read.csv("camera_operation_dates_2020.csv")
+# calculate number of observations of each species at each camera
+rai.acrossphases <- record.table.15min %>%
+  dplyr::group_by(Species, Camera, .drop = FALSE) %>%
+  dplyr::summarise(Detections = n()) 
+# merge with record table
+rai.acrossphases <- merge(rai.acrossphases, cam_operations.acrossphases)
+# calculate RAI
+rai.acrossphases$RAI <- rai.acrossphases$Detections / rai.acrossphases$Operation
+# join with metadata
+rai.acrossphases <- left_join(rai.acrossphases, metadata.raster)
+```
+
+# Question 1: How do carnivore detections vary by foxlight presence?
+
+## Test if RAI changes between foxlight yes and foxlight no, while controlling for camera
+
+Coyotes
+```{r q1.coyotes}
+ggplot(subset(rai, Species == "CALA"), aes(x = Foxlight, y = RAI, fill = Foxlight)) +
+  geom_boxplot() +
+  geom_jitter() +
+  labs(title="Coyote Presence With and Without Foxlights",
+       x ="Foxlight", y = "Daily Average Number of Coyotes Detected")
+  
+# linear model relating foxlights to rai (instead of a paired t-test; enables us to control for having 4 observations per camera)
+fit <- lme(RAI ~ Foxlight, random = ~ 1|Camera, data = subset(rai, Species == "CALA"), na.action = na.omit)
+summary(fit)
+
+```
+
+# Question 2: How do coyote detections vary by foxlight presence AND camera trap site? (aka microhabitat)
+
+
+Coyotes
+```{r}
+# Boxplot
+ggplot(subset(rai, Species == "CALA"), aes(x = Camera, y = RAI, fill = Foxlight)) +
+  geom_boxplot()
+
+# Point/Line (2 points bc there were 2 yes phases)
+ggplot(subset(rai, Species == "CALA"), aes(x = Camera, y = RAI, col = Foxlight)) +
+  geom_point() + geom_line() +
+  labs(title = "Coyote RAI by Foxlight Presence and Camera Site")
+
+# Line Graph for Coyote RAI by Foxlight Presence and Camera Site
+ggplot(subset(rai, Species == "CALA"), aes(x = Phase, y = RAI, col = Foxlight, group = 1)) +
+  geom_point() + geom_line(color="black") +
+  facet_wrap(~ Camera) +
+  scale_x_discrete(label=function(x) abbreviate(x, minlength=1)) +
+  labs(title = "Coyote RAI by Foxlight Presence and Camera Site") 
+```
+
+Testing Microhabitat Effects
+```{r}
+# Coyote by grassland + woodland
+ggplot(subset(rai, Species == "CALA"), aes(x = Camera, y = RAI, col = Foxlight)) +
+  geom_point() + geom_line() +
+  facet_wrap(~vegetation.coarser.clean, scales = 'free') +
+  scale_x_discrete(label=function(x) abbreviate(x, minlength=3)) +
+  labs(title = "Coyote RAI at Camera Trap Sites in Grassland Areas and Camera Trap Sites in Woodland Areas")
+```
+
+
+
+
+# Question 3: Carnivore Detections by Sheep Presence 
+
+```{r sheep stuff}
+# Camera_operations, add column for sheep presence,
+
+fit <- lme(RAI ~ (Foxlight * Sheep_Presence), random = ~ 1|Camera, data = subset(rai, Species == "CALA"), na.action = na.omit)
+summary(fit)
+
+# First way of representing this data 
+ggplot(subset(rai, Species == "CALA"), aes(x = Sheep_Presence, y = RAI, fill = Foxlight)) +
+  geom_boxplot() +
+  geom_jitter() +
+  labs(title="Coyote Presence With and Without Foxlights",
+       x ="Foxlight", y = "Daily Average Number of Coyotes Detected")
+```
+
+
+# Question 4: How does foxlight presence impact the daily activity of carnivores? 
+
+Setting up
+```{r q4.setup}
+# specify date format
+record.table.15min$Date <- as.POSIXct(record.table.15min$Date)
+
+# scale clock time to solar time
+coords <- matrix(c(-123.079, 39.0013), nrow=1) # note it is c(longitude, latitude)
+Coords <- sp::SpatialPoints(coords,
+                            proj4string=sp::CRS("+proj=longlat +datum=WGS84"))
+
+# store time as hms
+record.table.15min$Time.Corrected <- hms(record.table.15min$Time)
+
+# convert time from HH:MM:SS to decimal hours (HH.HHHH or whatever)
+record.table.15min$Time.Decimal <- record.table.15min$Time.Corrected$hour + record.table.15min$Time.Corrected$minute/60 + record.table.15min$Time.Corrected$second/3600
+
+# scale time so that it is between 0 and 1 by dividing by 24
+record.table.15min$Time.Scaled <- record.table.15min$Time.Decimal / 24
+
+# convert scaled time (0 to 1) to radians (0 to 2pi)
+record.table.15min$Time.Radians <- record.table.15min$Time.Scaled * 2 * pi
+
+# calculate suntime using function from overlap package, and coordinates and dates as formatted above
+record.table.15min$Time.Sun <- sunTime(record.table.15min$Time.Radians, record.table.15min$Date, Coords)
+
+# plot coyote activity with and without foxlights
+records.coyote.foxyes <- subset(record.table.15min, Species == "CALA" & Foxlight == "FoxY")
+records.coyote.foxno <- subset(record.table.15min, Species == "CALA" & Foxlight == "FoxN")
+
+# define overlap function
+multilines2 <-function (A, B, xscale = 24, linetype = c(1, 1), linecol = c("#4575b4", 
+                                                                           "red"), n.grid = 128, kmax = 3, adjust = 1, 
+                        ...) 
+{
+  bwA <- getBandWidth(A, kmax = kmax)/adjust
+  bwB <- getBandWidth(B, kmax = kmax)/adjust
+  if (is.na(bwA) || is.na(bwB)) 
+    stop("Bandwidth estimation failed.")
+  xsc <- if (is.na(xscale))
+    1
+  else xscale/(2 * pi)
+  xxRad <- seq(0, 2 * pi, length = n.grid)
+  xx <- xxRad * xsc
+  densA <- densityFit(A, xxRad, bwA)/xsc
+  densB <- densityFit(B, xxRad, bwB)/xsc
+  densOL <- pmin(densA, densB)
+  ylim <- c(0, max(densA, densB))
+  plot(0, 0, type = "n", ylim = ylim, xlim = range(xx), xlab = "Time", 
+       ylab = "Density", xaxt = "n", ...)
+  if (is.na(xscale)) {
+    axis(1, at = c(0, pi/2, pi, 3 * pi/2, 2 * pi), labels = c("0", 
+                                                              expression(pi/2), expression(pi), expression(3 * 
+                                                                                                             pi/2), expression(2 * pi)))
+  }
+  else if (xscale == 24) {
+    axis(1, at = c(0, 6, 12, 18, 24), labels = c("Midnight", 
+                                                 "Sunrise", "Noon", "Sunset", "Midnight"))
+  }
+  else {
+    axis(1)
+  }
+  lines(xx, densA, lty = linetype[1], col = linecol[1])
+  lines(xx, densB, lty = linetype[2], col = linecol[2])
+  return(invisible(list(x = xx, densityA = densA, densityB = densB)))
+}
+```
+
+Coyotes
+```{r q4.dailyactivity.coyotes}
+# plot for coyotes
+multilines2(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun, main = "Coyotes w/ and w/o Foxlight")
+legend('top', c("Yes Foxlight", "No Foxlight"), col = c("#4575b4", "red"), lty=c(1,1), bty='n')
+
+#test significance
+# this will return the degree of overlap - area under the shared curve (where 0 is completely different and 1 is completely the same)
+(Dhats <- overlapEst(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun))
+# use Dhat4 (they are different formulas - this one is good for sample sizes >50)
+
+# then resample each one 10,000 times (bootstrapping)
+bs_time.foxyes <- resample(records.coyote.foxyes$Time.Sun, 10000)
+bs_time.foxno <- resample(records.coyote.foxno$Time.Sun, 10000)
+
+# now calculate the resulting bootstrapped overlap value
+# it should be pretty similar to the "true" value (I think it makes more sense to report the true value, with the bootstrapped confidence intervals)
+bsOut <- bootEst(bs_time.foxyes, bs_time.foxno)
+colMeans(bsOut) 
+
+# now calculate the 95% confidence interval - this takes a little while to run
+bs <- as.vector(bsOut[,2])
+(bsCI_inout <- bootCI(Dhats[2], bs)) 
+# use the line with basic confidence intervals (to be honest I'm not sure what these all mean, they are just different methods for calculating)
+```
+
+
+Bobcats
+```{r q4.dailyactivity.bobcat}
+# plot bobcat activity with and without foxlights
+records.bobcat.foxyes <- subset(record.table.15min, Species == "LYRU" & Foxlight == "FoxY")
+records.bobcat.foxno <- subset(record.table.15min, Species == "LYRU" & Foxlight == "FoxN")
+
+# plot for bobcats
+multilines2(records.bobcat.foxyes$Time.Sun, records.bobcat.foxno$Time.Sun, main = "Bobcats w/ and w/o Foxlight")
+legend('top', c("Yes Foxlight", "No Foxlight"), col = c("#4575b4", "red"), lty=c(1,1), bty='n')
+
+#test significance
+# this will return the degree of overlap - area under the shared curve (where 0 is completely different and 1 is completely the same)
+(Dhats <- overlapEst(records.bobcat.foxyes$Time.Sun, records.bobcat.foxno$Time.Sun))
+# use Dhat4 (they are different formulas - this one is good for sample sizes >50)
+
+# then resample each one 10,000 times (bootstrapping)
+bs_time.foxyes <- resample(records.bobcat.foxyes$Time.Sun, 10000)
+bs_time.foxno <- resample(records.bobcat.foxno$Time.Sun, 10000)
+
+# now calculate the resulting bootstrapped overlap value
+# it should be pretty similar to the "true" value (I think it makes more sense to report the true value, with the bootstrapped confidence intervals)
+bsOut <- bootEst(bs_time.foxyes, bs_time.foxno)
+colMeans(bsOut) 
+
+# now calculate the 95% confidence interval - this takes a little while to run
+bs <- as.vector(bsOut[,2])
+(bsCI_inout <- bootCI(Dhats[2], bs)) 
+```
+
+# Question 5: Habituation
+```{r q5.habituation}
+##read in the CSV ##
+
+habituation.by.rai.foxY <- read.csv("habituation.by.rai.foxY.2020.csv", header=T)
+
+##testing for coyotes##
+ggplot(habituation.by.rai.foxY, aes(x = Phase, y = CALA.RAI)) +
+  geom_boxplot() +
+  geom_jitter() +
+  labs(title = "Coyote RAI by Active Foxlight Phase",
+       x = "First or Second Active Foxlight Phase", y = "Coyote RAI")
+
+# linear model relating foxlights to rai (instead of a paired t-test; enables us to control for having 4 observations per camera)
+fit <- lme(CALA.RAI ~ Phase, random = ~ 1|Camera, data = habituation.by.rai.foxY, na.action = na.omit)
+summary(fit)
+
+```
+
