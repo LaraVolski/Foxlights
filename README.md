@@ -19,3 +19,5 @@ dplyr
 A line I wrote on my local computer
 A line I wrote on my local computer
 testing git
+This is a line from RStudio
+And this is alose a line from RStudio
