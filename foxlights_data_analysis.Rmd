@@ -185,8 +185,8 @@ summary(fit)
 ggplot(subset(rai, Species == "CALA"), aes(x = Sheep_Presence, y = RAI, fill = Foxlight)) +
   geom_boxplot() +
   geom_jitter() +
-  labs(title="Coyote Presence With and Without Foxlights",
-       x ="Foxlight", y = "Daily Average Number of Coyotes Detected")
+  labs(title="Coyote Presence With and Without Sheep Presence and Foxlights",
+       x ="Sheep Presence", y = "Daily Average Number of Coyotes Detected")
 ```
 
 
