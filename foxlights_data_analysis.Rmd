@@ -147,7 +147,7 @@ Coyotes
 ggplot(subset(rai, Species == "CALA"), aes(x = Camera, y = RAI, fill = Foxlight)) +
   geom_boxplot()
 
-# Point/Line (2 points bc there were 2 yes phases)
+# Point/Line (each point represents a phase)
 ggplot(subset(rai, Species == "CALA"), aes(x = Camera, y = RAI, col = Foxlight)) +
   geom_point() + geom_line() +
   labs(title = "Coyote RAI by Foxlight Presence and Camera Site")
@@ -187,6 +187,7 @@ ggplot(subset(rai, Species == "CALA"), aes(x = Sheep_Presence, y = RAI, fill = F
   geom_jitter() +
   labs(title="Coyote Presence With and Without Sheep Presence and Foxlights",
        x ="Sheep Presence", y = "Daily Average Number of Coyotes Detected")
+
 ```
 
 
