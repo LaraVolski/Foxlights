@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 ---
 title: "foxlights_data_analysis"
 output: html_document
@@ -714,4 +714,3 @@ summary(fit)
 
 ```
 
->>>>>>> b1e48ccce57cf26b49d7a33762bd54494ec5db12
