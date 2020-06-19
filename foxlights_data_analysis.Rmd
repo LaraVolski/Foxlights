@@ -130,9 +130,12 @@ Coyotes
 ```{r q1.coyotes}
 ggplot(subset(rai, Species == "CALA"), aes(x = Foxlight, y = RAI, fill = Foxlight)) +
   geom_boxplot() +
-  geom_jitter() +
-  labs(title="Coyote Presence With and Without Foxlights",
-       x ="Foxlight", y = "Daily Average Number of Coyotes Detected")
+  theme_bw() +
+  theme(legend.position = "none") +
+  scale_x_discrete(labels = c("No", "Yes")) +
+ # geom_jitter() +
+  labs(x ="Foxlight", y = "Relative Coyote Activity (detections/day)")
+ggsave("figures/coyote_foxlight.png", width = 5, height = 4)
 
 # facet_wrap by phase
 ggplot(subset(rai, Species == "CALA"), aes(x = Foxlight, y = RAI, fill = Foxlight)) +
