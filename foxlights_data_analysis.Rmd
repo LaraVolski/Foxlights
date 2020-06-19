@@ -14,6 +14,8 @@ library(lubridate)
 library(plyr)
 library(camtrapR)
 library(dplyr)
+library(lme4)
+library(MASS)
 ```
 
 ### 1.2 Read in record table CSV
@@ -141,6 +143,17 @@ ggplot(subset(rai, Species == "CALA"), aes(x = Foxlight, y = RAI, fill = Foxligh
 fit <- lme(RAI ~ Foxlight, random = ~ 1|Camera, data = subset(rai, Species == "CALA"), na.action = na.omit)
 summary(fit)
 
+# try an alternative version with negative binomial - accounts for non-normal data - AIC = 425.6
+fit2 <- glmer.nb(Detections ~ Foxlight + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+summary(fit2)
+
+# null model - AIC = 424.4 (BEST MODEL)
+fit3 <- glmer.nb(Detections ~ offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+summary(fit3)
+
+# with camera interaction term, and no random effect - AIC = 428.7
+fit4 <- glm.nb(Detections ~ Foxlight*Camera + offset(log(Operation)), data = subset(rai, Species == "CALA"))
+summary(fit4)
 ```
 
 # Question 2: How do coyote detections vary by foxlight presence AND camera trap site? (aka microhabitat)
