@@ -131,6 +131,11 @@ ggplot(subset(rai, Species == "CALA"), aes(x = Foxlight, y = RAI, fill = Foxligh
   geom_jitter() +
   labs(title="Coyote Presence With and Without Foxlights",
        x ="Foxlight", y = "Daily Average Number of Coyotes Detected")
+
+# facet_wrap by phase
+ggplot(subset(rai, Species == "CALA"), aes(x = Foxlight, y = RAI, fill = Foxlight)) +
+  geom_boxplot() +
+  facet_wrap(~ Phase)
   
 # linear model relating foxlights to rai (instead of a paired t-test; enables us to control for having 4 observations per camera)
 fit <- lme(RAI ~ Foxlight, random = ~ 1|Camera, data = subset(rai, Species == "CALA"), na.action = na.omit)
