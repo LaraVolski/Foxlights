@@ -14,6 +14,7 @@ library(lubridate)
 library(plyr)
 library(camtrapR)
 library(dplyr)
+library(circular) #for watson two test
 ```
 
 ### 1.2 Read in record table CSV
@@ -162,7 +163,8 @@ ggplot(subset(rai, Species == "CALA"), aes(x = Phase, y = RAI, col = Foxlight, g
   geom_point() + geom_line(color="black") +
   facet_wrap(~ Camera) +
   scale_x_discrete(label=function(x) abbreviate(x, minlength=1)) +
-  labs(title = "Coyote RAI by Foxlight Presence and Camera Site") 
+  labs(title = "Daily Average Number of Coyotes Detected by Foxlight Presence and Camera Site",
+       x ="Phase", y = "RAI") 
 ```
 
 Testing Microhabitat Effects
@@ -320,6 +322,20 @@ colMeans(bsOut)
 bs <- as.vector(bsOut[,2])
 (bsCI_inout <- bootCI(Dhats[2], bs)) 
 ```
+
+Watson Test
+```{r q4 watson test}
+# Watson's test for circular data. It tells you whether their peak activity changes. x and y are the two subset data frames to be compared (foxlight vs no foxlight). Gives a test statistic and p-value. 
+
+records.coyote.foxyes <- subset(record.table.15min, Species == "CALA" & Foxlight == "FoxY")
+records.coyote.foxno <- subset(record.table.15min, Species == "CALA" & Foxlight == "FoxN")
+
+watson.two.test(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun)
+```
+
+
+
+
 
 # Question 5: Habituation
 ```{r q5.habituation}
