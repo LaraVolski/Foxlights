@@ -1,0 +1,144 @@
+---
+title: "foxlight_model_selection"
+author: "Lara & Kaitlyn"
+date: "6/19/2020"
+output: html_document
+---
+
+# Part 1) Setting up
+
+### 1.1 Load Packages
+```{r}
+library(MASS)
+library(lme4)
+library(ggplot2)
+library(dplyr)
+```
+
+### 1.2 Read in record table CSV
+```{r record.table}
+record.table.all <- read.csv("record_table_0min_deltaT_2020-06-06.csv")
+```
+
+
+### 1.3 create new column for cameras by taking the folder name and reducing to first three characters
+```{r new.columns}
+record.table.all$Camera <- strtrim(record.table.all$Camera_folder, 5)
+
+record.table.all$Phase <- substr(record.table.all$Camera_folder, 7, 12)
+
+record.table.all$Foxlight <- substr(record.table.all$Camera_folder, 14, 17)
+```
+
+
+### 1.4 Set the time interval (photos that occured within 15 min will count as one detection)
+```{r fifteen.min}
+record.table.15min <- record.table.all[record.table.all$delta.time.secs >= 900 |  # because 900 seconds = 15 minutes
+                                             record.table.all$delta.time.secs == 0, ]
+```
+
+### 1.5 Import additional csv
+
+
+*metadata.raster is normally distributed. The closer to 0, the less the value deviates from the norm. 
+```{r import.csv}
+# import camera phase operation dates
+cam_operations <- read.csv("phase_operation_dates_2020.csv", header=T)
+
+# reading in metadata
+
+# metadata <- read.csv("MicrohabitatData.csv", header=T)
+metadata.raster <- read.csv("Raster_metadata_Lara.csv", header=T)
+```
+
+### 1.6 Calculate RAI
+```{r RAI}
+# calculate RAI for each period
+
+# change camera, phase, and species to factor
+record.table.15min$Camera <- as.factor(record.table.15min$Camera)
+record.table.15min$Phase <- as.factor(record.table.15min$Phase)
+record.table.15min$Species <- droplevels(as.factor(record.table.15min$Species))
+
+
+# calculate number of observations of each species at each camera in each phase
+rai <- record.table.15min %>%
+  dplyr::group_by(Species, Camera, Phase, .drop = FALSE) %>%
+  dplyr::summarise(Detections = n()) 
+
+rai2 <- record.table.15min %>%
+  dplyr::group_by(Species, .drop = FALSE) %>%
+  dplyr::summarise(Detections = n())
+# merge with record table
+rai <- merge(rai, cam_operations)
+
+
+# calculate RAI
+rai$RAI <- rai$Detections / rai$Operation
+
+# remove records where camera was operating for <10 days
+for (i in 1:nrow(rai)) {
+  if(rai$Operation[i] < 10) {
+    rai$Detections[i] <- NA
+    rai$RAI[i] <- NA
+  } 
+}
+
+# join raster metadata
+rai <- left_join(rai, metadata.raster)
+
+#### now just calculate RAI at each camera, ACROSS ALL PHASES
+cam_operations.acrossphases <- read.csv("camera_operation_dates_2020.csv")
+# calculate number of observations of each species at each camera
+rai.acrossphases <- record.table.15min %>%
+  dplyr::group_by(Species, Camera, .drop = FALSE) %>%
+  dplyr::summarise(Detections = n()) 
+# merge with record table
+rai.acrossphases <- merge(rai.acrossphases, cam_operations.acrossphases)
+# calculate RAI
+rai.acrossphases$RAI <- rai.acrossphases$Detections / rai.acrossphases$Operation
+# join with metadata
+rai.acrossphases <- left_join(rai.acrossphases, metadata.raster)
+```
+
+# Part 2 - Model selection
+
+Make candidate models and evaluate them!
+
+## Null model/hypothesis - only camera as random effect.
+AIC = 424.4
+```{r}
+fit.null <- glmer.nb(Detections ~ offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+summary(fit.null)
+```
+
+## Foxlight only
+AIC = 425.6
+```{r}
+fit1 <- glmer.nb(Detections ~ Foxlight + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+summary(fit1)
+```
+
+## Sheep only
+AIC = 424.7
+```{r}
+fit2 <- glmer.nb(Detections ~ Sheep_Presence + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+summary(fit2)
+```
+
+## Sheep & foxlight interaction
+AIC = 427.5
+```{r}
+fit3 <- glmer.nb(Detections ~ Foxlight * Sheep_Presence + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+summary(fit3)
+```
+
+## Habitat type only
+AIC = 426.4
+
+Note that the model initially failed to converge, but I used a different "control function" with control=glmerControl(optimizer="bobyqa") - tbh not totally sure what this does - and it does converge, without changing AIC.
+```{r}
+fit4 <- glmer.nb(Detections ~ vegetation.coarser.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
+summary(fit4)
+```
+
