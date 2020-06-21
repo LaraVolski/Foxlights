@@ -148,4 +148,17 @@ AIC = 425.5
 fit5 <- glmer.nb(Detections ~ fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
 summary(fit5)
 ```
+## Phase only
+AIC = 431.1
+```{r}
+fit6 <- glmer.nb(Detections ~ Phase + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
+summary(fit6)
+```
+
+## Phase and Foxlight only
+AIC = 435.3
+```{r}
+fit7 <- glmer.nb(Detections ~ Foxlight * Phase + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+summary(fit7)
+```
 
