@@ -142,3 +142,10 @@ fit4 <- glmer.nb(Detections ~ vegetation.coarser.clean + offset(log(Operation)) 
 summary(fit4)
 ```
 
+## Fence dist only
+AIC = 425.5
+```{r}
+fit5 <- glmer.nb(Detections ~ fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
+summary(fit5)
+```
+
