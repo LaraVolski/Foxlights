@@ -285,12 +285,13 @@ multilines2 <-function (A, B, xscale = 24, linetype = c(1, 1), linecol = c("#457
   lines(xx, densB, lty = linetype[2], col = linecol[2])
   return(invisible(list(x = xx, densityA = densA, densityB = densB)))
 }
+
 ```
 
 Coyotes
 ```{r q4.dailyactivity.coyotes}
 # plot for coyotes
-multilines2(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun, main = "Coyotes w/ and w/o Foxlight")
+multilines2(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun, main = "Daily Acitivty Patterns of Coyotes")
 legend('top', c("Yes Foxlight", "No Foxlight"), col = c("#4575b4", "red"), lty=c(1,1), bty='n')
 
 #test significance
@@ -311,6 +312,8 @@ colMeans(bsOut)
 bs <- as.vector(bsOut[,2])
 (bsCI_inout <- bootCI(Dhats[2], bs)) 
 # use the line with basic confidence intervals (to be honest I'm not sure what these all mean, they are just different methods for calculating)
+
+watson.two.test(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun)
 ```
 
 
