@@ -286,6 +286,7 @@ multilines2 <-function (A, B, xscale = 24, linetype = c(1, 1), linecol = c("#457
   return(invisible(list(x = xx, densityA = densA, densityB = densB)))
 }
 
+watson.two.test(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun)
 ```
 
 Coyotes
@@ -312,8 +313,6 @@ colMeans(bsOut)
 bs <- as.vector(bsOut[,2])
 (bsCI_inout <- bootCI(Dhats[2], bs)) 
 # use the line with basic confidence intervals (to be honest I'm not sure what these all mean, they are just different methods for calculating)
-
-watson.two.test(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun)
 ```
 
 
