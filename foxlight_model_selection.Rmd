@@ -112,28 +112,65 @@ fit.null <- glmer.nb(Detections ~ offset(log(Operation)) + (1|Camera), data = su
 summary(fit.null)
 ```
 
-## Foxlight only
+## Foxlight Family of Models
+### Foxlight only
 AIC = 425.6
 ```{r}
 fit1 <- glmer.nb(Detections ~ Foxlight + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
 summary(fit1)
 ```
 
-## Sheep only
+### Sheep only
 AIC = 424.7
 ```{r}
 fit2 <- glmer.nb(Detections ~ Sheep_Presence + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
 summary(fit2)
 ```
 
-## Sheep & foxlight interaction
-AIC = 427.5
+### Phase only
+AIC = 431.1
 ```{r}
-fit3 <- glmer.nb(Detections ~ Foxlight * Sheep_Presence + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+fit3 <- glmer.nb(Detections ~ Phase + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
 summary(fit3)
 ```
 
-## Habitat type only
+### Foxlight + Sheep
+AIC = 425.7
+```{r}
+fit4 <- glmer.nb(Detections ~ Foxlight + Sheep_Presence + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+summary(fit4)
+```
+
+### Foxlight * Sheep
+AIC = 427.5
+```{r}
+fit5 <- glmer.nb(Detections ~ Foxlight * Sheep_Presence + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+summary(fit5)
+```
+### Foxlight + Phase
+AIC = 431.4
+```{r}
+fit6 <- glmer.nb(Detections ~ Foxlight + Phase + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+summary(fit6)
+```
+### Foxlight * Phase
+AIC = ?
+```{r}
+fit7 <- glmer.nb(Detections ~ Foxlight * Phase + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+summary(fit7)
+```
+
+
+
+## Habitat Family of Models
+### Vegetation + Ruggedness + Fence Distance + Road Distance
+
+```{r}
+fit8 <- glmer.nb(Detections ~ vegetation.coarser.clean +  Phase + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+summary(fit8)
+```
+
+
 AIC = 426.4
 
 Note that the model initially failed to converge, but I used a different "control function" with control=glmerControl(optimizer="bobyqa") - tbh not totally sure what this does - and it does converge, without changing AIC.
@@ -147,12 +184,6 @@ AIC = 425.5
 ```{r}
 fit5 <- glmer.nb(Detections ~ fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
 summary(fit5)
-```
-## Phase only
-AIC = 431.1
-```{r}
-fit6 <- glmer.nb(Detections ~ Phase + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
-summary(fit6)
 ```
 
 ## Phase and Foxlight only
