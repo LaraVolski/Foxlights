@@ -17,6 +17,7 @@ library(camtrapR)
 library(dplyr)
 library(lme4)
 library(MASS)
+library(circular) #Watson2Test
 ```
 
 ### 1.2 Read in record table CSV
@@ -130,12 +131,13 @@ rai.acrossphases <- left_join(rai.acrossphases, metadata.raster)
 Coyotes
 ```{r q1.coyotes}
 ggplot(subset(rai, Species == "CALA"), aes(x = Foxlight, y = RAI, fill = Foxlight)) +
-  geom_boxplot() +
+  geom_boxplot(alpha=2) +
   theme_bw() +
   theme(legend.position = "none") +
   scale_x_discrete(labels = c("No", "Yes")) +
  # geom_jitter() +
-  labs(x ="Foxlight", y = "Relative Coyote Activity (detections/day)")
+  labs(x ="Foxlight", y = "Relative Coyote Activity (detections/day)") +
+  scale_fill_brewer(palette="Spectral") +
 ggsave("figures/coyote_foxlight.png", width = 4, height = 4)
 
 # facet_wrap by phase
@@ -146,6 +148,7 @@ ggplot(subset(rai, Species == "CALA"), aes(x = Foxlight, y = RAI, fill = Foxligh
   scale_x_discrete(labels = c("No", "Yes")) +
  # geom_jitter() +
   labs(x ="Foxlight", y = "Relative Coyote Activity (detections/day)") +
+  scale_fill_brewer(palette="Spectral") +
   facet_wrap(~ Phase)
 
 # linear model relating foxlights to rai (instead of a paired t-test; enables us to control for having 4 observations per camera)
@@ -172,7 +175,8 @@ Coyotes
 ```{r}
 # Boxplot
 ggplot(subset(rai, Species == "CALA"), aes(x = Camera, y = RAI, fill = Foxlight)) +
-  geom_boxplot()
+  geom_boxplot() +
+  scale_fill_brewer(palette="Spectral")
 
 # Point/Line (each point represents a phase)
 ggplot(subset(rai, Species == "CALA"), aes(x = Camera, y = RAI, col = Foxlight)) +
@@ -289,11 +293,11 @@ multilines2 <-function (A, B, xscale = 24, linetype = c(1, 1), linecol = c("#457
 watson.two.test(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun)
 ```
 
-Coyotes
+Coyotes (need help changing the color of this graph!)
 ```{r q4.dailyactivity.coyotes}
 # plot for coyotes
 multilines2(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun, main = "Daily Acitivty Patterns of Coyotes")
-legend('top', c("Yes Foxlight", "No Foxlight"), col = c("#4575b4", "red"), lty=c(1,1), bty='n')
+legend('top', c("Yes Foxlight", "No Foxlight"), col = c("yellow", "orange"), lty=c(1,1), bty='n')
 
 #test significance
 # this will return the degree of overlap - area under the shared curve (where 0 is completely different and 1 is completely the same)
