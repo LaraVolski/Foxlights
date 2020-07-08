@@ -296,7 +296,7 @@ watson.two.test(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun)
 Coyotes (need help changing the color of this graph!)
 ```{r q4.dailyactivity.coyotes}
 # plot for coyotes
-multilines2(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun, main = "Daily Acitivty Patterns of Coyotes")
+multilines2(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun, col = c("yellow", "orange"))
 legend('top', c("Yes Foxlight", "No Foxlight"), col = c("yellow", "orange"), lty=c(1,1), bty='n')
 
 #test significance
