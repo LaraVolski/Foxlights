@@ -233,11 +233,15 @@ fit18 <- glmer.nb(Detections ~ rugged121.clean + road.dist.clean + offset(log(Op
 summary(fit18)
 ```
 ### Ruggedness
+<<<<<<< HEAD
 AIC = 419.9
+=======
+AIC = 419.4
 ```{r}
 fit19 <- glmer.nb(Detections ~ rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
 summary(fit19)
 ```
+
 
 ```{r}
 fit33 <- glmer.nb(Detections ~ rugged81.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
@@ -249,6 +253,7 @@ fit34 <- glmer.nb(Detections ~ rugged25.clean + offset(log(Operation)) + (1|Came
 summary(fit34)
 ```
 
+=======
 ### Fence Distance + Road Distance
 AIC = 419.4
 ```{r}
