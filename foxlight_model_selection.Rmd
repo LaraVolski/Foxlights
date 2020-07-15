@@ -50,6 +50,10 @@ cam_operations <- read.csv("phase_operation_dates_2020.csv", header=T)
 
 # metadata <- read.csv("MicrohabitatData.csv", header=T)
 metadata.raster <- read.csv("Raster_metadata_Lara.csv", header=T)
+
+# scale raster values
+metadata.raster <- metadata.raster %>%
+  mutate_if(is.numeric, scale)
 ```
 
 ### 1.6 Calculate RAI
