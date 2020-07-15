@@ -13,6 +13,7 @@ library(MASS)
 library(lme4)
 library(ggplot2)
 library(dplyr)
+library(car)
 ```
 
 ### 1.2 Read in record table CSV
@@ -139,6 +140,7 @@ AIC = 425.7
 ```{r}
 fit4 <- glmer.nb(Detections ~ Foxlight + Sheep_Presence + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
 summary(fit4)
+vif(fit4)
 ```
 
 ### Foxlight * Sheep
