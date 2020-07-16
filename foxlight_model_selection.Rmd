@@ -206,3 +206,19 @@ fit11 <- glmer.nb(Detections ~ Foxlight * rugged25.clean + Foxlight * fence.dist
 summary(fit11)
 vif(fit11)
 ```
+
+### Foxlight * Vegetation
+AIC = 422.7
+```{r}
+fit12 <- glmer.nb(Detections ~ Foxlight * vegetation.coarser.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
+summary(fit12)
+vif(fit12)
+```
+
+### Foxlight * Road Distance
+AIC = 426.7
+```{r}
+fit13 <- glmer.nb(Detections ~ Foxlight * road.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
+summary(fit13)
+vif(fit13)
+```
