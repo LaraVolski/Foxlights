@@ -171,132 +171,20 @@ fit7 <- glmer.nb(Detections ~ Foxlight * Phase + offset(log(Operation)) + (1|Cam
 summary(fit7)
 vif(fit7)
 ```
-
-
-
-## Habitat Family of Models
-
-### Vegetation + Ruggedness + Fence Distance + Road Distance
-AIC = 422.9 
-```{r}
-fit8 <- glmer.nb(Detections ~ vegetation.coarser.clean + rugged121.clean + road.dist.clean + fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit8)
-```
-## Vegetation + Ruggedness + Fence Distance
-AIC = 421.0
-```{r}
-fit9 <- glmer.nb(Detections ~ vegetation.coarser.clean + rugged121.clean + fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit9)
-```
-### Vegetation + Ruggedness + Road Distance
-AIC = 421.3
-```{r}
-fit10 <- glmer.nb(Detections ~ vegetation.coarser.clean + rugged121.clean + road.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit10)
-```
-### Vegetation + Road Distance + Fence Distance
-AIC = 425.0
-```{r}
-fit11 <- glmer.nb(Detections ~ vegetation.coarser.clean + road.dist.clean + fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit11)
-```
-### Vegetation + Ruggedness
-AIC = 420.7
-```{r}
-fit12 <- glmer.nb(Detections ~ vegetation.coarser.clean + rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit12)
-```
-### Vegetation + Fence Distance
-AIC = 427.3
-```{r}
-fit13 <- glmer.nb(Detections ~ vegetation.coarser.clean + fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit13)
-```
-### Vegetation + Road Distance
-AIC = 420.7
-```{r}
-fit14 <- glmer.nb(Detections ~ vegetation.coarser.clean + road.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit14)
-```
-### Vegetation only
-AIC = 426.4
-
-Note that the model initially failed to converge, but I used a different "control function" with control=glmerControl(optimizer="bobyqa") - tbh not totally sure what this does - and it does converge, without changing AIC.
-```{r}
-fit15 <- glmer.nb(Detections ~ vegetation.coarser.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
-summary(fit15)
-```
-### Ruggedness + Fence Distance + Road Distance
-AIC = 421.4
-```{r}
-fit16 <- glmer.nb(Detections ~ rugged121.clean + fence.dist.clean + road.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit16)
-```
-### Ruggedness + Fence Distance
-AIC = 419.4
-```{r}
-fit17 <- glmer.nb(Detections ~ rugged121.clean + fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit17)
-```
-### Ruggedness + Road Distance
-AIC = 421.0
-```{r}
-fit18 <- glmer.nb(Detections ~ rugged121.clean + road.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit18)
-```
-### Ruggedness
-
-```{r}
-fit19 <- glmer.nb(Detections ~ rugged25.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit34)
-```
-
-=======
-### Fence Distance + Road Distance
-AIC = 419.4
-```{r}
-fit20 <- glmer.nb(Detections ~ fence.dist.clean + road.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit20)
-```
-### Fence dist only
-AIC = 425.5
-```{r}
-fit21 <- glmer.nb(Detections ~ fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
-summary(fit21)
-```
-### Road dist only
-AIC = 424.1
-```{r}
-fit22 <- glmer.nb(Detections ~ road.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
-summary(fit22)
-```
-### Viewshed only
-AIC = 424.0
-
-```{r}
-fit23 <- glmer.nb(Detections ~ viewshed.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit23)
-```
-### Viewshed + Ruggedness
-AIC = 424.0
-
-```{r}
-fit24 <- glmer.nb(Detections ~ viewshed.clean + rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit24)
-```
-### Viewshed + Ruggedness + Fence Distance
-AIC = 419.4
-```{r}
-fit25 <- glmer.nb(Detections ~ viewshed.clean + rugged121.clean + fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit25)
-```
 ## Habitat & Foxlights
 
-### Foxlight + Ruggedness + Fence Distance
+### Foxlight * Ruggedness.25 * Fence Distance
 AIC = 420.7
 ```{r}
-fit26 <- glmer.nb(Detections ~ Foxlight + rugged121.clean + fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit26)
+fit8 <- glmer.nb(Detections ~ Foxlight * rugged25.clean * fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+summary(fit8)
+```
+
+### Foxlight + Ruggedness.9 + Fence Distance
+AIC = 420.7
+```{r}
+fit9 <- glmer.nb(Detections ~ Foxlight + rugged9.clean + fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+summary(fit9)
 ```
 
 ### Foxlight + Viewshed + Ruggedness + Fence Distance
