@@ -141,6 +141,7 @@ summary(fit3)
 
 ### Foxlight + Sheep
 AIC = 425.7
+VIF = 1.001283
 ```{r}
 fit4 <- glmer.nb(Detections ~ Foxlight + Sheep_Presence + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
 summary(fit4)
