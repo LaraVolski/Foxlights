@@ -174,16 +174,17 @@ vif(fit7)
 ## Habitat & Foxlights
 
 ### Foxlight * Ruggedness.25 * Fence Distance
-AIC = 420.7
+AIC = 431.1
 ```{r}
 fit8 <- glmer.nb(Detections ~ Foxlight * rugged25.clean * fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
 summary(fit8)
+vif(fit8)
 ```
 
-### Foxlight + Ruggedness.9 + Fence Distance
+### Foxlight * Ruggedness.9 * Fence Distance
 AIC = 420.7
 ```{r}
-fit9 <- glmer.nb(Detections ~ Foxlight + rugged9.clean + fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+fit9 <- glmer.nb(Detections ~ Foxlight * rugged9.clean * fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
 summary(fit9)
 ```
 
