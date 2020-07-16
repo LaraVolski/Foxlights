@@ -172,72 +172,37 @@ fit7 <- glmer.nb(Detections ~ Foxlight * Phase + offset(log(Operation)) + (1|Cam
 summary(fit7)
 vif(fit7)
 ```
+
 ## Habitat & Foxlights
 
-### Foxlight * Ruggedness.25 * Fence Distance
-AIC = 431.1
+### Foxlight * Ruggedness.25
+AIC = 424.4
 ```{r}
-fit8 <- glmer.nb(Detections ~ Foxlight * rugged9.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
+fit8 <- glmer.nb(Detections ~ Foxlight * rugged25.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
 summary(fit8)
 vif(fit8)
 ```
 
-### Foxlight * Ruggedness.9 * Fence Distance
-AIC = 420.7
+### Foxlight * Fence Distance
+AIC = 431.5
 ```{r}
-fit9 <- glmer.nb(Detections ~ Foxlight * rugged9.clean * fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+fit9 <- glmer.nb(Detections ~ Foxlight * rugged9.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
 summary(fit9)
+vif(fit9)
 ```
 
-### Foxlight + Viewshed + Ruggedness + Fence Distance
-AIC = 420.8
+### Foxlight * Fence Distance
+AIC = 428.4
+VIF = 1.29
 ```{r}
-fit27 <- glmer.nb(Detections ~ Foxlight + viewshed.clean + rugged121.clean + fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit27)
+fit10 <- glmer.nb(Detections ~ Foxlight * fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
+summary(fit10)
+vif(fit10)
 ```
-### Foxlight + Ruggedness
-AIC = 421.2
-```{r}
-fit28 <- glmer.nb(Detections ~ Foxlight + rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit28)
-```
-### Foxlight * Ruggedness
-AIC = 423.1
-```{r}
-fit29 <- glmer.nb(Detections ~ Foxlight * rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit29)
-```
-### Foxlight + Sheep + Ruggedness
-AIC = 420.8
-```{r}
-fit30 <- glmer.nb(Detections ~ Foxlight + rugged121.clean + Sheep_Presence + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit30)
-```
-### Foxlight * Ruggedness + Sheep
-AIC = 428.1
-```{r}
-fit31 <- glmer.nb(Detections ~ Foxlight * rugged121.clean + Sheep_Presence + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
-summary(fit31)
-```
-### Foxlight + Ruggedness * Fence Distance
+### Foxlight * Rugged.25 + Foxlight * Fence Distance
 AIC = 422.7
 ```{r}
-fit32 <- glmer.nb(Detections ~ Foxlight + rugged121.clean * fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
-summary(fit32)
-```
-
-
-## Alex's Dredge model
-
-I have used dredge with a random effect (pasture). You have to make sure you set na.action to "na.fail", like this, eg, with pasture as a random effect: 
-```{r}
-human.pres.reduced <- glmer(rai ~ road.dist.clean + I(road.dist.clean^2) + fence.dist.clean + I(fence.dist.clean^2) + rugged121.clean + I(rugged121.clean^2) + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), na.action = "na.fail")
-
-
-
-human.pres.reduced <- glmer(attack ~ road_dist + I(road_dist^2) + boun_dist + I(boun_dist^2) + fence_dist + I(fence_dist^2) +
-                              fence_ht_num +  exp_plot +
-                              (1|pasture_name),
-                            family = binomial, data = scale.cat, 
-                            na.action = "na.fail")
+fit11 <- glmer.nb(Detections ~ Foxlight * rugged25.clean + Foxlight * fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
+summary(fit11)
+vif(fit11)
 ```
