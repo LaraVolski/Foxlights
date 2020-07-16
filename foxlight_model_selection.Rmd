@@ -150,21 +150,26 @@ vif(fit4)
 
 ### Foxlight * Sheep
 AIC = 427.5
+VIF = 2.707
 ```{r}
 fit5 <- glmer.nb(Detections ~ Foxlight * Sheep_Presence + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
 summary(fit5)
+vif(fit5)
 ```
 ### Foxlight + Phase
 AIC = 431.4
+VIF = 1.05
 ```{r}
 fit6 <- glmer.nb(Detections ~ Foxlight + Phase + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
 summary(fit6)
+vif(fit6)
 ```
 ### Foxlight * Phase
 AIC = 435.3 but error???
 ```{r}
 fit7 <- glmer.nb(Detections ~ Foxlight * Phase + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
 summary(fit7)
+vif(fit7)
 ```
 
 
@@ -240,23 +245,9 @@ fit18 <- glmer.nb(Detections ~ rugged121.clean + road.dist.clean + offset(log(Op
 summary(fit18)
 ```
 ### Ruggedness
-<<<<<<< HEAD
-AIC = 419.9
-=======
-AIC = 419.4
-```{r}
-fit19 <- glmer.nb(Detections ~ rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit19)
-```
-
 
 ```{r}
-fit33 <- glmer.nb(Detections ~ rugged81.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
-summary(fit33)
-```
-
-```{r}
-fit34 <- glmer.nb(Detections ~ rugged25.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
+fit19 <- glmer.nb(Detections ~ rugged25.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
 summary(fit34)
 ```
 
