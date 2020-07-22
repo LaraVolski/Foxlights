@@ -184,7 +184,8 @@ vif(fit8)
 ```
 
 ### Foxlight * Rugged9.clean
-AIC = 431.5
+AIC = 425.0
+VIF = 
 ```{r}
 fit9 <- glmer.nb(Detections ~ Foxlight * rugged9.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
 summary(fit9)
@@ -200,7 +201,8 @@ summary(fit10)
 vif(fit10)
 ```
 ### Foxlight * Rugged.25 + Foxlight * Fence Distance
-AIC = 422.7
+AIC = 428.4
+VIF = 
 ```{r}
 fit11 <- glmer.nb(Detections ~ Foxlight * rugged25.clean + Foxlight * fence.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
 summary(fit11)
