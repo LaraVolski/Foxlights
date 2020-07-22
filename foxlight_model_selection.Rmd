@@ -185,7 +185,7 @@ vif(fit8)
 
 ### Foxlight * Rugged9.clean
 AIC = 425.0
-VIF = 
+VIF = 1.36
 ```{r}
 fit9 <- glmer.nb(Detections ~ Foxlight * rugged9.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"))
 summary(fit9)
