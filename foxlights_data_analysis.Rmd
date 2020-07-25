@@ -254,8 +254,8 @@ records.coyote.foxyes <- subset(record.table.15min, Species == "CALA" & Foxlight
 records.coyote.foxno <- subset(record.table.15min, Species == "CALA" & Foxlight == "FoxN")
 
 # define overlap function
-multilines2 <-function (A, B, xscale = 24, linetype = c(1, 1), linecol = c("palegreen4", 
-                                                                           "tomato2"), n.grid = 128, kmax = 3, adjust = 1, 
+multilines2 <-function (A, B, xscale = 24, linetype = c(1, 1), linecol = c("cadetblue3", 
+                                                                           "antiquewhite3"), n.grid = 128, kmax = 3, adjust = 1, 
                         ...) 
 {
   bwA <- getBandWidth(A, kmax = kmax)/adjust
@@ -296,8 +296,8 @@ watson.two.test(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun)
 Coyotes (need help changing the color of this graph!)
 ```{r q4.graph}
 # plot for coyotes
-multilines2(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun, col = c("antiquewhite1", "cadetblue1"))
-legend('top', c("Yes Foxlight", "No Foxlight"), col = c("antiquewhite1", "cadetblue1"), lty=c(1,1), bty='n')
+multilines2(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun)
+legend('top', c("Yes Foxlight", "No Foxlight"), col = c("cadetblue3", "antiquewhite3"), lty=c(1,1), bty='n')
 ```
 
 ```{r q4.dailyactivity.coyotes}
