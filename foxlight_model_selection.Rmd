@@ -178,9 +178,10 @@ vif(fit7)
 ### Foxlight * Ruggedness.25
 AIC = 424.4
 ```{r}
-fit8 <- glmer.nb(Detections ~ Foxlight * rugged25.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"), print(fit8, digits = 3))
+fit8 <- glmer.nb(Detections ~ Foxlight * rugged25.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
 summary(fit8)
 vif(fit8)
+print(fit8, digits = 3)
 ```
 
 ### Foxlight * Rugged9.clean
