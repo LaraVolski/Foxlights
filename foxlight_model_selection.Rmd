@@ -159,6 +159,7 @@ fit5 <- glmer.nb(Detections ~ Foxlight * Sheep_Presence + offset(log(Operation))
 summary(fit5)
 vif(fit5)
 ```
+
 ### Foxlight + Phase
 Phase AIC = 431.4
 Phase_New AIC = 425.9
@@ -168,8 +169,8 @@ fit6 <- glmer.nb(Detections ~ Foxlight + Phase_New + offset(log(Operation)) + (1
 summary(fit6)
 vif(fit6)
 ```
+
 ### Foxlight * Phase
-Phase AIC = 435.3 but error???
 Phase_New AIC = 427.7 
 ```{r}
 fit7 <- glmer.nb(Detections ~ Foxlight * Phase_New + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
