@@ -73,7 +73,6 @@ for (species in c("2", "Bird", "DIVI", "Ghosts", "Mice", "SCOC", "SCGR", "SCNI")
 ```
 
 
-
 ### RAI
 ```{r RAI}
 # calculate RAI for each period
@@ -123,6 +122,19 @@ rai.acrossphases$RAI <- rai.acrossphases$Detections / rai.acrossphases$Operation
 # join with metadata
 rai.acrossphases <- left_join(rai.acrossphases, metadata.raster)
 ```
+### Changing phases so that they correspond to FoxY1 and FoxN1.
+```{r}
+#Phase 1 and 2 --> Phase 1
+# Phase 3 and 4 --> Phase 2
+# Phase 5 and 6 --> Phase 3
+# Phase 7 and 8 --> Phase 4
+# Phase 9 --> Phase 5
+phase_key <- tibble(Phase = c("Phase1", "Phase2", "Phase3", "Phase4", "Phase5", "Phase6", "Phase7", "Phase8", "Phase9"), Phase_New = c(1, 1, 2, 2, 3, 3, 4, 4, 5))
+
+# Then use left_join to join this with the RAI data frame used for modeling, and use this column (Phase_New) as your covariate in modeling. 
+rai <- left_join(rai, phase_key)
+```
+
 
 # Question 1: How do carnivore detections vary by foxlight presence?
 
@@ -149,7 +161,7 @@ ggplot(subset(rai, Species == "CALA"), aes(x = Foxlight, y = RAI, fill = Foxligh
  # geom_jitter() +
   labs(x ="Foxlight", y = "Relative Coyote Activity (detections/day)") +
   scale_fill_brewer(palette="Spectral") +
-  facet_wrap(~ Phase)
+  facet_wrap(~ Phase_New)
 
 # linear model relating foxlights to rai (instead of a paired t-test; enables us to control for having 4 observations per camera)
 fit <- lme(RAI ~ Foxlight, random = ~ 1|Camera, data = subset(rai, Species == "CALA"), na.action = na.omit)

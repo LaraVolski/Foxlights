@@ -106,6 +106,7 @@ rai.acrossphases$RAI <- rai.acrossphases$Detections / rai.acrossphases$Operation
 # join with metadata
 rai.acrossphases <- left_join(rai.acrossphases, metadata.raster, by = "Camera")
 ```
+```
 
 # Part 2 - Model selection
 
@@ -134,9 +135,10 @@ summary(fit2)
 ```
 
 ### Phase only
-AIC = 431.1
+Old Phase AIC = 431.1
+Phase_New AIC = 424.8
 ```{r}
-fit3 <- glmer.nb(Detections ~ Phase + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
+fit3 <- glmer.nb(Detections ~ Phase_New + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
 summary(fit3)
 ```
 
@@ -158,17 +160,19 @@ summary(fit5)
 vif(fit5)
 ```
 ### Foxlight + Phase
-AIC = 431.4
+Phase AIC = 431.4
+Phase_New AIC = 425.9
 VIF = 1.05
 ```{r}
-fit6 <- glmer.nb(Detections ~ Foxlight + Phase + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
+fit6 <- glmer.nb(Detections ~ Foxlight + Phase_New + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
 summary(fit6)
 vif(fit6)
 ```
 ### Foxlight * Phase
-AIC = 435.3 but error???
+Phase AIC = 435.3 but error???
+Phase_New AIC = 427.7 
 ```{r}
-fit7 <- glmer.nb(Detections ~ Foxlight * Phase + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
+fit7 <- glmer.nb(Detections ~ Foxlight * Phase_New + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
 summary(fit7)
 vif(fit7)
 ```
