@@ -142,6 +142,12 @@ rai <- left_join(rai, phase_key)
 
 Coyotes
 ```{r q1.coyotes}
+
+# The mult_format multiplies the coyote RAI by 35, so instead of looking at daily average RAI, we are looking at it per 5 week phase. 
+
+mult_format <- function() {
+     function(x) format(35*x,digits = 2)}
+
 ggplot(subset(rai, Species == "CALA"), aes(x = Foxlight, y = RAI, fill = Foxlight)) +
   geom_boxplot(alpha=2) +
   theme_bw() +
@@ -149,9 +155,13 @@ ggplot(subset(rai, Species == "CALA"), aes(x = Foxlight, y = RAI, fill = Foxligh
   scale_x_discrete(labels = c("Inactive", "Active")) +
  # geom_jitter() +
   labs(x ="Foxlight", y = "Relative Coyote Activity (detections/day)") +
-  scale_fill_manual(values=c("antiquewhite1", "cadetblue1")) +
-ggsave("figures/coyote_foxlight.png", width = 4, height = 4)
+  scale_y_continuous(labels = mult_format()) +
+  scale_fill_manual(values=c("antiquewhite1", "cadetblue1")) 
+  ggsave("figures/coyote_foxlight.png", width = 4, height = 4)
 
+```
+
+```{r q1.coyotes_moregraphs}
 # facet_wrap by phase
 ggplot(subset(rai, Species == "CALA"), aes(x = Foxlight, y = RAI, fill = Foxlight)) +
   geom_boxplot() +
@@ -305,11 +315,11 @@ multilines2 <-function (A, B, xscale = 24, linetype = c(1, 1), linecol = c("cade
 watson.two.test(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun)
 ```
 
-Coyotes (need help changing the color of this graph!)
+Coyotes
 ```{r q4.graph}
 # plot for coyotes
 multilines2(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun)
-legend('top', c("Yes Foxlight", "No Foxlight"), col = c("cadetblue3", "antiquewhite3"), lty=c(1,1), bty='n')
+legend('top', c("Active Foxlight", "Inactive Foxlight"), col = c("cadetblue3", "antiquewhite3"), lty=c(1,1), bty='n')
 ```
 
 ```{r q4.dailyactivity.coyotes}
