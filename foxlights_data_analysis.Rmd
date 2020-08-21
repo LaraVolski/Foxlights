@@ -154,9 +154,9 @@ ggplot(subset(rai, Species == "CALA"), aes(x = Foxlight, y = RAI, fill = Foxligh
   theme(legend.position = "none") +
   scale_x_discrete(labels = c("Inactive", "Active")) +
  # geom_jitter() +
-  labs(x ="Foxlight", y = "Relative Coyote Activity (detections/day)") +
+  labs(x ="Foxlight", y = "Relative Coyote Activity (detections/5 week Foxlight periods)") +
   scale_y_continuous(labels = mult_format()) +
-  scale_fill_manual(values=c("antiquewhite1", "cadetblue1")) 
+  scale_fill_manual(values=c("antiquewhite1", "cadetblue1")) + 
   ggsave("figures/coyote_foxlight.png", width = 4, height = 4)
 
 ```
