@@ -106,7 +106,6 @@ rai.acrossphases$RAI <- rai.acrossphases$Detections / rai.acrossphases$Operation
 # join with metadata
 rai.acrossphases <- left_join(rai.acrossphases, metadata.raster, by = "Camera")
 ```
-```
 
 # Part 2 - Model selection
 
