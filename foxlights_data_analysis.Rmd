@@ -210,7 +210,8 @@ ggplot(subset(rai, Species == "CALA"), aes(x = Phase, y = RAI, col = Foxlight, g
   geom_point() + geom_line(color="black") +
   facet_wrap(~ Camera) +
   scale_x_discrete(label=function(x) abbreviate(x, minlength=1)) +
-  labs(title = "Coyote RAI by Foxlight Presence and Camera Site") 
+  labs(title = "Coyote RAI by Foxlight Presence and Camera Site") +
+  ggsave("figures/coyote_RAI_by_camera_site.png", width = 6, height = 4)
 ```
 
 Testing Microhabitat Effects
