@@ -177,6 +177,13 @@ summary(fit7)
 vif(fit7)
 ```
 
+### Foxlight + Sheep + Phase
+```{r}
+fit14 <- glmer.nb(Detections ~ Foxlight + Phase_New + Sheep_Presence + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "CALA"), control=glmerControl(optimizer="bobyqa"))
+summary(fit14)
+vif(fit14)
+```
+
 ## Habitat & Foxlights
 
 ### Foxlight * Ruggedness.25

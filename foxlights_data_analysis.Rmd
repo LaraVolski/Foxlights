@@ -390,5 +390,11 @@ ggplot(habituation.by.rai.foxY, aes(x = Phase, y = CALA.RAI)) +
 fit <- lme(CALA.RAI ~ Phase, random = ~ 1|Camera, data = habituation.by.rai.foxY, na.action = na.omit)
 summary(fit)
 
+##testing for coyotes##
+ggplot(habituation.by.rai.foxY, aes(x = Phase, y = CALA.RAI)) +
+  geom_boxplot() +
+  labs(title = "Coyote RAI by Active Foxlight Phase",
+       x = "First or Second Active Foxlight Phase", y = "Coyote RAI")
+
 ```
 
