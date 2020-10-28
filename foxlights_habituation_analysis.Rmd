@@ -1,0 +1,45 @@
+---
+title: "foxlights_habituation_analysis"
+author: "Lara Volski"
+date: "10/7/2020"
+output: html_document
+---
+
+Consider seasonality when looking at phase
+Add ‘season’ to the phase_operation_dates_2020 google sheets
+
+ Plotting detections by week within a phase, maybe it was that 5 weeks is just not the best timeframe, confine it to a week perhaps instead. We chose 5 weeks bc they said that was the typical duration that they keep sheep in a pasutre.
+Recreate the phase_operation_dates_2020 but change the ‘Start’ and ‘End’  to be one week long for each ‘week’ 
+
+
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+ggplot(subset(rai, Species == "CALA", Start == "10/7/18"), aes(x = Date, y = RAI, col = Foxlight, group = 1)) +
+  geom_point() + geom_line(color="black") +
+  facet_wrap(~ Camera) +
+  scale_x_discrete(label=function(x) abbreviate(x, minlength=1))
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

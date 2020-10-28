@@ -146,15 +146,15 @@ Coyotes
 # The mult_format multiplies the coyote RAI by 35, so instead of looking at daily average RAI, we are looking at it per 5 week phase. 
 
 mult_format <- function() {
-     function(x) format(35*x,digits = 2)}
+     function(x) format(50*x,digits = 2)}
 
 ggplot(subset(rai, Species == "CALA"), aes(x = Foxlight, y = RAI, fill = Foxlight)) +
   geom_boxplot(alpha=2) +
   theme_bw() +
   theme(legend.position = "none") +
-  scale_x_discrete(labels = c("Inactive", "Active")) +
+  scale_x_discrete(labels = c("No", "Yes")) +
  # geom_jitter() +
-  labs(x ="Foxlight", y = "Relative Coyote Activity (detections/Foxlight period)") +
+  labs(x ="Foxlight", y = "Relative Coyote Activity (detections/phase)") +
   scale_y_continuous(labels = mult_format()) +
   scale_fill_manual(values=c("antiquewhite1", "cadetblue1")) + 
   ggsave("figures/coyote_foxlight.png", width = 4, height = 4)
@@ -320,7 +320,7 @@ Coyotes
 ```{r q4.graph}
 # plot for coyotes
 multilines2(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun)
-legend('top', c("Active Foxlight", "Inactive Foxlight"), col = c("cadetblue3", "antiquewhite3"), lwd = 3, lty=c(1,1), bty='n')
+legend('top', c("Yes Foxlight", "No Foxlight"), col = c("cadetblue3", "antiquewhite3"), lwd = 3, lty=c(1,1), bty='n')
 ```
 
 ```{r q4.dailyactivity.coyotes}
@@ -390,5 +390,15 @@ ggplot(habituation.by.rai.foxY, aes(x = Phase, y = CALA.RAI)) +
 fit <- lme(CALA.RAI ~ Phase, random = ~ 1|Camera, data = habituation.by.rai.foxY, na.action = na.omit)
 summary(fit)
 
+```
+## Detections by Week
+```{r}
+detections.by.week <- read.csv("week_operation_dates.csv")
+
+ggplot(detections.by.week, aes(x = Week, y = Detections)) +
+  geom_bar(stat="identity") +
+  scale_x_continuous(breaks = seq(1, 12, by = 1)) +
+   facet_wrap(~ Season)
+  
 ```
 
