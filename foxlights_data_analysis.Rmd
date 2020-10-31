@@ -391,14 +391,18 @@ fit <- lme(CALA.RAI ~ Phase, random = ~ 1|Camera, data = habituation.by.rai.foxY
 summary(fit)
 
 ```
+
+```{r setup, include=FALSE}
 ## Detections by Week
-```{r}
-detections.by.week <- read.csv("week_operation_dates.csv")
+
+detections.by.week <- read.csv("detections_by_week.csv")
 
 ggplot(detections.by.week, aes(x = Week, y = Detections)) +
   geom_bar(stat="identity") +
-  scale_x_continuous(breaks = seq(1, 12, by = 1)) +
-   facet_wrap(~ Season)
-  
-```
+  scale_x_continuous(breaks = seq(1, 9, by = 1)) +
+   facet_wrap(~ Foxlight) +
+   coord_cartesian(xlim=c(0, 9)) +
+   labs(title="Coyote Detections Per Week",
+       x ="Week", y = "Coyote Detections")
 
+```
