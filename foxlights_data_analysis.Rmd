@@ -393,7 +393,7 @@ summary(fit)
 ```
 
 ```{r setup, include=FALSE}
-## Detections by Week
+## Detections by Week adjusted for median
 
 detections.by.week <- read.csv("detections_by_week.csv")
 
@@ -425,4 +425,43 @@ ggplot(data = detections.by.week, aes(x = Week, y = Detections, fill = Foxlight)
         axis.title.y = element_text(face="bold", colour="red", size = 12),
         legend.title = element_text(face="bold", size = 10))
 
+## Basic Histogram
+Detections <- detections.by.week$Detections
+hist(Detections,
+     main="Coyote Detections",
+xlab="Number of Detections",
+xlim=c(0,6),
+col="darkmagenta")
+
 ```
+
+```{r}
+## Detections by Week with median
+
+median.detections.by.week <- read.csv("Detections_Medians.csv")
+
+## original graph 
+ggplot(median.detections.by.week, aes(x = Week, y = Median)) +
+  geom_bar(stat="identity") +
+  scale_x_continuous(breaks = seq(1, 9, by = 1)) +
+   facet_wrap(~ Foxlight) +
+   coord_cartesian(xlim=c(0, 9)) +
+   labs(title="Coyote Detections Per Week",
+       x ="Week", y = "Coyote Detections") +
+  ggsave("figures/coyote_weekly_detections.png", width = 4, height = 4)
+
+
+## Side by Side Graph
+ggplot(data = median.detections.by.week, aes(x = Week, y = Median, fill = Foxlight)) +
+  geom_bar(stat = "identity", position = position_dodge())  +
+  scale_x_continuous(breaks = seq(1, 9, by = 1)) +
+  theme(plot.title = element_text(hjust = 0.5), 
+        axis.title.x = element_text(face="bold", colour="red", size = 12),
+        axis.title.y = element_text(face="bold", colour="red", size = 12),
+        legend.title = element_text(face="bold", size = 10)) +
+labs(title="Coyote Detections Per Week",
+       x ="Week", y = "Coyote Detections") +
+  ggsave("figures/coyote_weekly_detections2.png", width = 4, height = 4)
+
+```
+
