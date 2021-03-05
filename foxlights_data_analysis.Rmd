@@ -145,7 +145,7 @@ rai <- left_join(rai, phase_key)
 Coyotes
 ```{r q1.coyotes}
 
-# The mult_format multiplies the coyote RAI by 35, so instead of looking at daily average RAI, we are looking at it per 5 week phase. If you want to take it to a 10 week phase, multiply it by 50. Idk why. 
+# The mult_format multiplies the coyote RAI by 35, so instead of looking at daily average RAI, we are looking at it per 5 week phase (because 7 days x 5 weeks = 35 days). If you want to take it to a 10 week phase, multiply it by 50.
 
 mult_format <- function() {
      function(x) format(35*x,digits = 2)}
