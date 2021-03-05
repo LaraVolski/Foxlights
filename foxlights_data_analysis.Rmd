@@ -278,7 +278,7 @@ records.coyote.foxyes <- subset(record.table.15min, Species == "CALA" & Foxlight
 records.coyote.foxno <- subset(record.table.15min, Species == "CALA" & Foxlight == "FoxN")
 
 # define overlap function
-multilines2 <-function (A, B, xscale = 24, linetype = c(1, 1), linecol = c("palegreen4", "darkorange4"), n.grid = 128, kmax = 3, adjust = 1,
+multilines2 <-function (A, B, xscale = 24, linetype = c(1, 2), linecol = c("orange1", "cadetblue4"), n.grid = 128, kmax = 3, adjust = 1,
                         ...) 
 {
   bwA <- getBandWidth(A, kmax = kmax)/adjust
@@ -320,7 +320,7 @@ Coyotes
 ```{r q4.graph}
 # plot for coyotes
 multilines2(records.coyote.foxyes$Time.Sun, records.coyote.foxno$Time.Sun)
-legend('top', c("Yes Foxlight", "No Foxlight"), col = c("palegreen4", "darkorange4"), lwd = 3, lty=c(1,1), bty='n')
+legend('top', c("Yes Foxlight", "No Foxlight"), col = c("orange1", "cadetblue4"), lwd = 3, lty=c(1,1), bty='n')
 ```
 
 ```{r q4.dailyactivity.coyotes}
