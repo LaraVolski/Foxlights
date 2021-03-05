@@ -131,7 +131,7 @@ rai.acrossphases <- left_join(rai.acrossphases, metadata.raster)
 # Phase 5 and 6 --> Phase 3
 # Phase 7 and 8 --> Phase 4
 # Phase 9 --> Phase 5
-phase_key <- tibble(Phase = c("Phase1", "Phase2", "Phase3", "Phase4", "Phase5", "Phase6", "Phase7", "Phase8", "Phase9"), qPhase_New = c(1, 1, 2, 2, 3, 3, 4, 4, 5))
+phase_key <- tibble(Phase = c("Phase1", "Phase2", "Phase3", "Phase4", "Phase5", "Phase6", "Phase7", "Phase8", "Phase9"), Phase_New = c(1, 1, 2, 2, 3, 3, 4, 4, 5))
 
 # Then use left_join to join this with the RAI data frame used for modeling, and use this column (Phase_New) as your covariate in modeling. 
 rai <- left_join(rai, phase_key)
@@ -163,6 +163,7 @@ ggplot(subset(rai, Species == "CALA"), aes(x = Foxlight, y = RAI, fill = Foxligh
 ```
 
 ```{r q1.coyotes_moregraphs}
+
 # facet_wrap by phase
 ggplot(subset(rai, Species == "CALA"), aes(x = Foxlight, y = RAI, fill = Foxlight)) +
   geom_boxplot() +
