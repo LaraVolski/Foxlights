@@ -463,6 +463,7 @@ ggplot(data = median.detections.by.week, aes(x = Week, y = Median, fill = Foxlig
         legend.title = element_text(face="bold", size = 10)) +
 labs(x ="Week", y = "Median Coyote Detections") +
   scale_fill_manual(values=c("cadetblue4", "orange1")) + 
+  theme_bw() +
   ggsave("figures/coyote_weekly_detections2.png", width = 4, height = 4)
 
 ```
