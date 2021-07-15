@@ -186,5 +186,6 @@ summary(fit14)
 rai_bobcat <- filter(rai, Species == "LYRU") %>% 
   select(Camera, Phase, Species, Detections, Latitude, Longitude, Operation, Foxlight, Sheep_Presence, RAI) %>% 
   drop_na()
+write.csv(rai_bobcat, "rai_bobcat.csv", row.names = F)
 ```
 
