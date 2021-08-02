@@ -3,6 +3,8 @@ title: "foxlight_model_selection"
 author: "Lara & Kaitlyn"
 date: "7/22/2020"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 # Part 1) Setting up
@@ -14,6 +16,7 @@ library(lme4)
 library(ggplot2)
 library(dplyr)
 library(car)
+library(tidyr)
 ```
 
 ### 1.2 Read in record table CSV
@@ -106,6 +109,21 @@ rai.acrossphases$RAI <- rai.acrossphases$Detections / rai.acrossphases$Operation
 # join with metadata
 rai.acrossphases <- left_join(rai.acrossphases, metadata.raster, by = "Camera")
 ```
+
+Export data
+```{r}
+CALA_data <- filter(rai, Species == "CALA") %>% 
+  select(Camera, Detections, Operation, RAI, Foxlight, Sheep_Presence) %>% 
+  drop_na %>% 
+  rename(Coyote_Detections = Detections,
+         Days_Operating = Operation,
+         Relative_Activity_Index = RAI)
+
+head(CALA_data)
+
+write.csv(CALA_data, "Volski-data.csv", row.names = F)
+```
+
 
 # Part 2 - Model selection
 
