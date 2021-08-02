@@ -113,7 +113,7 @@ rai.acrossphases <- left_join(rai.acrossphases, metadata.raster, by = "Camera")
 Export data
 ```{r}
 CALA_data <- filter(rai, Species == "CALA") %>% 
-  select(Camera, Detections, Operation, RAI, Foxlight, Sheep_Presence) %>% 
+  select(Camera, Phase, Detections, Operation, RAI, Foxlight, Sheep_Presence) %>% 
   drop_na %>% 
   rename(Coyote_Detections = Detections,
          Days_Operating = Operation,
