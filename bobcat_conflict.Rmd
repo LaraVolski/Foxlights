@@ -1,0 +1,246 @@
+---
+title: "bobcat_conflict"
+author: "Lara Volski"
+date: "11/11/2021"
+output: html_document
+---
+# Part 1) Setting up
+
+### 1.1 Load Packages
+```{r library.packages, include = FALSE}
+library(nlme)
+library(ggplot2)
+library(overlap)
+library(maptools)
+library(lubridate)
+library(plyr)
+library(camtrapR)
+library(dplyr)
+library(lme4)
+library(MASS)
+library(circular) #Watson2Test
+library(ggpattern)
+```
+
+### 1.2 Read in record table CSV
+```{r record.table}
+record.table.all <- read.csv("record_table_0min_deltaT_2020-06-06.csv")
+```
+
+### 1.3 create new column for cameras by taking the folder name and reducing to first three characters
+```{r new.columns}
+record.table.all$Camera <- strtrim(record.table.all$Camera_folder, 5)
+
+record.table.all$Phase <- substr(record.table.all$Camera_folder, 7, 12)
+
+record.table.all$Foxlight <- substr(record.table.all$Camera_folder, 14, 17)
+```
+
+### 1.4 Set the time interval (photos that occured within 15 min will count as one detection)
+```{r fifteen.min}
+record.table.15min <- record.table.all[record.table.all$delta.time.secs >= 900 |  # because 900 seconds = 15 minutes
+                                             record.table.all$delta.time.secs == 0, ]
+```
+
+### 1.5 Import additional csv
+
+*metadata.raster is normally distributed. The closer to 0, the less the value deviates from the norm. 
+```{r import.csv}
+# import camera phase operation dates
+cam_operations <- read.csv("phase_operation_dates_2020.csv", header=T)
+
+# reading in metadata
+
+# metadata <- read.csv("MicrohabitatData.csv", header=T)
+metadata.raster <- read.csv("Raster_metadata_Lara.csv", header=T)
+```
+
+### 1.6 Plotting Species Richness across cameras by lat and long
+```{r species.richness.plot}
+detectionMaps(CTtable = cam_operations, 
+              recordTable = record.table.15min, 
+              stationCol = "Camera", 
+              Xcol = "Latitude", 
+              Ycol = "Longitude",
+              richnessPlot = TRUE,
+              printLabels = TRUE)
+
+# remove species that we don't care about (here, removing birds, opposum, nothing, mice, pigs, and squirrels) 
+for (species in c("2", "Bird", "DIVI", "Ghosts", "Mice", "SCOC", "SCGR", "SCNI")) {
+  record.table.15min <- record.table.15min[record.table.15min$Species != species, ]
+}
+```
+
+### RAI
+```{r RAI}
+# calculate RAI for each period
+
+# change camera, phase, and species to factor
+record.table.15min$Camera <- as.factor(record.table.15min$Camera)
+record.table.15min$Phase <- as.factor(record.table.15min$Phase)
+record.table.15min$Species <- droplevels(as.factor(record.table.15min$Species))
+
+
+# calculate number of observations of each species at each camera in each phase
+rai <- record.table.15min %>%
+  dplyr::group_by(Species, Camera, Phase, .drop = FALSE) %>%
+  dplyr::summarise(Detections = n()) 
+
+rai2 <- record.table.15min %>%
+  dplyr::group_by(Species, .drop = FALSE) %>%
+  dplyr::summarise(Detections = n())
+# merge with record table
+rai <- merge(rai, cam_operations)
+
+
+# calculate RAI
+rai$RAI <- rai$Detections / rai$Operation
+
+# remove records where camera was operating for <10 days
+for (i in 1:nrow(rai)) {
+  if(rai$Operation[i] < 10) {
+    rai$Detections[i] <- NA
+    rai$RAI[i] <- NA
+  } 
+}
+
+# join raster metadata
+rai <- left_join(rai, metadata.raster)
+
+#### now just calculate RAI at each camera, ACROSS ALL PHASES
+cam_operations.acrossphases <- read.csv("camera_operation_dates_2020.csv")
+# calculate number of observations of each species at each camera
+rai.acrossphases <- record.table.15min %>%
+  dplyr::group_by(Species, Camera, .drop = FALSE) %>%
+  dplyr::summarise(Detections = n()) 
+# merge with record table
+rai.acrossphases <- merge(rai.acrossphases, cam_operations.acrossphases)
+# calculate RAI
+rai.acrossphases$RAI <- rai.acrossphases$Detections / rai.acrossphases$Operation
+# join with metadata
+rai.acrossphases <- left_join(rai.acrossphases, metadata.raster)
+```
+
+### Changing phases so that they correspond to FoxY1 and FoxN1.
+```{r}
+#Phase 1 and 2 --> Phase 1
+# Phase 3 and 4 --> Phase 2
+# Phase 5 and 6 --> Phase 3
+# Phase 7 and 8 --> Phase 4
+# Phase 9 --> Phase 5
+phase_key <- tibble(Phase = c("Phase1", "Phase2", "Phase3", "Phase4", "Phase5", "Phase6", "Phase7", "Phase8", "Phase9"), Phase_New = c(1, 1, 2, 2, 3, 3, 4, 4, 5))
+
+# Then use left_join to join this with the RAI data frame used for modeling, and use this column (Phase_New) as your covariate in modeling. 
+rai <- left_join(rai, phase_key)
+```
+# Question 1: How do bobcat detections vary by foxlight presence?
+
+## Test if RAI changes between foxlight yes and foxlight no, while controlling for camera
+
+Bobcats
+```{r q1.bobcat}
+
+# The mult_format multiplies the coyote RAI by 35, so instead of looking at daily average RAI, we are looking at it per 5 week phase (because 7 days x 5 weeks = 35 days). If you want to take it to a 10 week phase, multiply it by 50.
+
+
+mult_format <- function() {
+     function(x) format(35*x,digits = 2)}
+
+
+ggplot(subset(rai, Species == "LYRU"), aes(x = Foxlight, y = RAI*35, fill = Foxlight)) +
+  geom_boxplot(alpha=2) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  scale_x_discrete(labels = c("No", "Yes")) +
+ # geom_jitter() +
+  labs(x ="Foxlight", y = "Relative Bobcat Activity (detections/phase)") +
+  ## scale_y_continuous(labels = mult_format()) +
+  scale_fill_manual(values=c("cadetblue4", "orange1")) + 
+  ggsave("figures/bobcat_foxlight.png", width = 4, height = 4)
+
+# Line Graph for Coyote RAI by Foxlight Presence and Camera Site
+ggplot(subset(rai, Species == "LYRU"), aes(x = Phase, y = RAI, col = Foxlight, group = 1)) +
+  geom_point() + geom_line(color="black") +
+  facet_wrap(~ Camera) +
+  scale_x_discrete(label=function(x) abbreviate(x, minlength=1)) +
+  labs(title = "LYRU RAI by Foxlight Presence and Camera Site") +
+  ggsave("figures/coyote_RAI_by_camera_site.png", width = 6, height = 4)
+            
+```
+
+# Question 2: How do bobcat detections vary by sheep presence?
+
+## Test if RAI changes between foxlight yes and foxlight no, while controlling for camera
+```{r q2.bobcat}
+
+# The mult_format multiplies the coyote RAI by 35, so instead of looking at daily average RAI, we are looking at it per 5 week phase (because 7 days x 5 weeks = 35 days). If you want to take it to a 10 week phase, multiply it by 50.
+
+rai_bobcat <- read.csv("rai_bobcat.csv", header=T)
+
+mult_format <- function() {
+     function(x) format(35*x,digits = 2)}
+
+## just sheep presence
+
+ggplot(subset(rai_bobcat, Species == "LYRU"), aes(x = Sheep_Presence, y = RAI*35, fill = Sheep_Presence)) +
+  geom_boxplot(alpha=2) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  scale_x_discrete(labels = c("No", "Yes")) +
+ # geom_jitter() +
+  labs(x ="Sheep Present", y = "Relative Bobcat Activity (detections/phase)") +
+  ## scale_y_continuous(labels = mult_format()) +
+  scale_fill_manual(values=c("cadetblue4", "orange1")) + 
+  ggsave("figures/bobcat_sheep_presence.png", width = 4, height = 4)
+
+## sheep presence with a Foxlight fill
+
+ggplot(subset(rai_bobcat, Species == "LYRU"), aes(x = Sheep_Presence, y = RAI*35, fill = Foxlight)) +
+  geom_boxplot(alpha=2) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  scale_x_discrete(labels = c("No", "Yes")) +
+ # geom_jitter() +
+  labs(x ="Sheep Presence", y = "Relative Bobcat Activity (detections/phase)") +
+  ## scale_y_continuous(labels = mult_format()) +
+  scale_fill_manual(values=c("cadetblue4", "orange1")) + 
+  ggsave("figures/bobcat_sheep_presence_with_Foxlight.png", width = 4, height = 4)
+            
+```
+# Question 3: How do bobcat detections vary by dog presence?
+
+```{r}
+
+##looking at dog RAI... likely double-counting the same dog...
+rai_bobcat2 <- read.csv("rai_bobcat_lv.csv", header=T)
+
+ggplot(data = rai_bobcat2, aes(x = Dog_RAI, y = RAI)) +
+  geom_point(aes(col=Foxlight)) +
+  geom_smooth(method="loess", se=F) +
+  labs(x ="Dog RAI", y = "Bobcat RAI")
+
+## Individual Dog Count
+# geom_smooth better for two continuous variables, whereas here we have a discrete & continuous
+ggplot(data = rai_bobcat2, aes(x = Ind_Dogs, y = RAI)) +
+  geom_point(aes(col=Foxlight)) +
+  geom_smooth(method="loess", se=F) +
+  labs(x ="Dogs", y = "Bobcat RAI")
+
+ggplot(data = rai_bobcat2, aes(x = Ind_Dogs, y = RAI)) +
+  geom_col(fill = "cadetblue4") +
+  labs(x ="Dogs", y = "Bobcat RAI") +
+  ggsave("figures/bobcat_individualdogs.png", width = 4, height = 4)
+
+ggplot(data = rai_bobcat2, aes(x = Ind_Dogs, y = RAI * 35, group = Ind_Dogs)) +
+  geom_boxplot(alpha=2, fill = "cadetblue4") +
+  labs(x ="Dogs", y = "Bobcat RAI") +
+  theme(legend.position = "none")
+
+
+## Testing for p-values
+cor.test(rai_bobcat2$Ind_Dogs, rai_bobcat2$RAI)
+
+chisq.test(rai_bobcat2$Ind_Dogs, rai_bobcat2$RAI)
+
+```
+

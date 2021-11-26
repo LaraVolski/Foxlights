@@ -107,7 +107,7 @@ rai.acrossphases <- merge(rai.acrossphases, cam_operations.acrossphases)
 # calculate RAI
 rai.acrossphases$RAI <- rai.acrossphases$Detections / rai.acrossphases$Operation
 # join with metadata
-rai.acrossphases <- left_join(rai.acrossphases, metadata.raster, by = "Camera")
+# rai.acrossphases <- left_join(rai.acrossphases, metadata.raster, by = "Camera")
 ```
 
 # Part 2 - Model selection
@@ -176,10 +176,64 @@ summary(fit7)
 ### Foxlight + Sheep + Phase
 AIC = 339.4
 ```{r}
-fit14 <- glmer.nb(Detections ~ Foxlight + Phase + Sheep_Presence + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
-summary(fit14)
+fit8 <- glmer.nb(Detections ~ Foxlight + Phase + Sheep_Presence + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+summary(fit8)
 ```
 
+## Habitat Variables
+
+### Distance to Water
+AIC = 323.1
+```{r}
+fit9 <- glmer.nb(Detections ~ water.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+summary(fit9)
+```
+
+### Elevation
+AIC = 326.6
+```{r}
+fit10 <- glmer.nb(Detections ~ elevation.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+summary(fit10)
+```
+
+### Ruggedness
+AIC = 328.4
+```{r}
+fit11 <- glmer.nb(Detections ~ rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+summary(fit11)
+```
+
+### Foxlight * Distance to Water
+AIC = 326
+```{r}
+fit12 <- glmer.nb(Detections ~ Foxlight * water.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+summary(fit12)
+vif(fit12)
+```
+
+### Foxlight * Elevation
+AIC = 330.3
+```{r}
+fit13 <- glmer.nb(Detections ~ Foxlight * elevation.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+summary(fit13)
+vif(fit13)
+```
+
+### Foxlight * Ruggedness121
+AIC = 329.9
+```{r}
+fit14 <- glmer.nb(Detections ~ Foxlight * rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+summary(fit14)
+vif(fit14)
+```
+
+### Sheep_Presence * Distance to Water
+AIC = 325.7
+```{r}
+fit15 <- glmer.nb(Detections ~ Sheep_Presence * water.dist.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+summary(fit15)
+vif(fit15)
+```
 
 # export bobcat data
 ```{r}
