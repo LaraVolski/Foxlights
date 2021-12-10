@@ -235,6 +235,48 @@ summary(fit15)
 vif(fit15)
 ```
 
+### Sheep_Presence * Elevation
+AIC = 326.9
+```{r}
+fit16 <- glmer.nb(Detections ~ Sheep_Presence * elevation.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+summary(fit16)
+vif(fit16)
+```
+
+### Sheep_Presence * Ruggedness
+AIC = 331.4
+```{r}
+fit17 <- glmer.nb(Detections ~ Sheep_Presence * rugged121.clean + offset(log(Operation)) + (1|Camera), data = subset(rai, Species == "LYRU"), control=glmerControl(optimizer="bobyqa"))
+summary(fit17)
+vif(fit17)
+```
+
+## Dogs
+AIC = 328.1
+```{r}
+rai_bobcat2 <- read.csv("rai_bobcat_lv.csv", header=T)
+
+fit18 <- glmer.nb(Detections ~ Ind_Dogs + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
+summary(fit18)
+```
+
+## Dogs + Dist.Water
+AIC = 320.8
+```{r}
+fit19 <- glmer.nb(Detections ~ Ind_Dogs + Dist.Water + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
+summary(fit19)
+vif(fit19)
+```
+
+## Dogs * Dist.Water
+AIC = 322.6
+VIF is over 4!!!
+```{r}
+fit20 <- glmer.nb(Detections ~ Ind_Dogs * Dist.Water + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
+summary(fit20)
+vif(fit20)
+```
+
 # export bobcat data
 ```{r}
 rai_bobcat <- filter(rai, Species == "LYRU") %>% 
