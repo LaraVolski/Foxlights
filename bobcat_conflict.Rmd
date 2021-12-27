@@ -240,9 +240,9 @@ ggplot(data = rai_bobcat2, aes(x = Ind_Dogs, y = RAI * 35, group = Ind_Dogs)) +
 
 
 ## Testing for p-values
-cor.test(rai_bobcat2$Ind_Dogs, rai_bobcat2$RAI)
+t.test(sample.data$deer_before, sample.data$deer_during)
 
-chisq.test(rai_bobcat2$Ind_Dogs, rai_bobcat2$RAI)
+## try 0 vs. 1, 1 vs. 2, etc. to look for threshold.
 
 ```
 

@@ -256,7 +256,7 @@ AIC = 328.1
 ```{r}
 rai_bobcat2 <- read.csv("rai_bobcat_lv.csv", header=T)
 
-fit18 <- glmer.nb(Detections ~ Ind_Dogs + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
+fit18 <- glmer.nb(Detections ~ I(Ind_Dogs^2) + Ind_Dogs + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
 summary(fit18)
 ```
 
@@ -276,6 +276,35 @@ fit20 <- glmer.nb(Detections ~ Ind_Dogs * Dist.Water + offset(log(Operation)) + 
 summary(fit20)
 vif(fit20)
 ```
+
+## Dogs * Rugged.121
+AIC = 326.5
+```{r}
+fit21 <- glmer.nb(Detections ~ Ind_Dogs * Rugged.121 + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
+summary(fit21)
+vif(fit21)
+```
+
+# Part 3 - Dredge Models
+
+```{r}
+
+## Full lmer model
+full.model <- lmer(Detections ~ Foxlight + Sheep_Presence + Dogs_Scaled + Elevation + 
+                       Rugged.121 + Dist.Water + offset(log(Operation)) + (1|Camera),
+                      data = rai_bobcat2, na.action = "na.fail")
+
+AIC(full.model) ## AIC is 451.9571
+vif(full.model) ## All vifs are under 4 
+
+full.model.reduced <- glmer(attack ~ fence_ht_num + I(boun_dist^2) + 
+                               rugged9 + rugged81 + 
+                               I(water_dist^2) + vegbor_crs + NDVI_of_yr + chaparral + vernal_pool +
+                               acres_dbl + avg_dogs + 
+                               (1|pasture_name), 
+                             family = binomial, data = final.data, na.action = "na.fail")
+```
+
 
 # export bobcat data
 ```{r}
