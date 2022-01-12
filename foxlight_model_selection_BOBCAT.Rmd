@@ -285,24 +285,96 @@ summary(fit21)
 vif(fit21)
 ```
 
+## Dogs Scaled
+AIC = 328.1
+```{r}
+fit22 <- glmer.nb(Detections ~ Dogs_Scaled + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
+summary(fit22)
+vif(fit22)
+```
+
+## Dogs Scaled * Dist_Water
+AIC = 322.6
+VIF for Dogs_Scaled = 18.7768
+```{r}
+fit23 <- glmer.nb(Detections ~ Dogs_Scaled * Dist.Water + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
+summary(fit23)
+vif(fit23)
+```
+
+## Dogs Scaled + Dist_Water
+AIC = 320.8
+VIF < 4
+```{r}
+fit24 <- glmer.nb(Detections ~ Dogs_Scaled + Dist.Water + offset(log(Operation)) + (1|Camera), data = rai_bobcat2)
+summary(fit24)
+vif(fit24)
+```
+
+## 
+AIC = 320.8
+VIF < 4
+```{r}
+fit25 <- glmer.nb(Detections ~ Rugged.121 + offset(log(Operation)) + (1|Camera), data = rai_bobcat2, control=glmerControl(optimizer="bobyqa"))
+summary(fit25)
+vif(fit25)
+```
+
+
 # Part 3 - Dredge Models
 
 ```{r}
+rai_bobcat2 <- read.csv("rai_bobcat_lv.csv")
 
 ## Full lmer model
-full.model <- lmer(Detections ~ Foxlight + Sheep_Presence + Dogs_Scaled + Elevation + 
-                       Rugged.121 + Dist.Water + offset(log(Operation)) + (1|Camera),
+full.model <- lmer(Detections ~ Foxlight + Sheep_Presence + Dogs_Scaled + Elevation +
+                     rugged9.clean + rugged25.clean + rugged49.clean + rugged81.clean +
+                     Rugged.121 + Dist.Water + Slope + Fence.Dist + hq.dist.clean +
+                     road.dist.clean + viewshed.clean + ndvi.16.clean.1 +
+                     veg.edges.dist.clean + chap.edges.dist.clean + 
+                        offset(log(Operation)) + (1|Camera),
                       data = rai_bobcat2, na.action = "na.fail")
 
-AIC(full.model) ## AIC is 451.9571
-vif(full.model) ## All vifs are under 4 
+AIC(full.model) ## AIC is 427.4306
+vif(full.model) ## All except Foxlight, Sheep_Presence, and Dogs_Scaled have VIF > 4
 
-full.model.reduced <- glmer(attack ~ fence_ht_num + I(boun_dist^2) + 
-                               rugged9 + rugged81 + 
-                               I(water_dist^2) + vegbor_crs + NDVI_of_yr + chaparral + vernal_pool +
-                               acres_dbl + avg_dogs + 
-                               (1|pasture_name), 
-                             family = binomial, data = final.data, na.action = "na.fail")
+full.model.reduced <- lmer(Detections ~ Foxlight + Sheep_Presence + Dogs_Scaled +
+                               Dist.Water + Slope + Fence.Dist + road.dist.clean +
+                               veg.edges.dist.clean + chap.edges.dist.clean + 
+                               (1|Camera), 
+                               data = rai_bobcat2, na.action = "na.fail")
+
+AIC(full.model.reduced) ## AIC is 454.5723
+vif(full.model.reduced) ## All except Sheep_Presence have a VIF < 2, Sheep_Presence is 2.023585
+
+#Now, to dredge! First install and load the MuMIn package
+
+#Then dredging is as simple as...
+Dredge.Table <- dredge(full.model.reduced)
+
+trial.model <- lmer(Detections ~ Foxlight + Sheep_Presence + Dogs_Scaled +
+                      Dist.Water + Slope + Fence.Dist +
+                     road.dist.clean + viewshed.clean +
+                        offset(log(Operation)) + (1|Camera),
+                      data = rai_bobcat2, na.action = "na.fail")
+AIC(trial.model) ## AIC is 427.4306
+vif(trial.model)
+
+
+
+## last trial
+
+trial.model <- lmer(Detections ~ Foxlight + Dogs_Scaled +
+                      Dist.Water + Slope + Fence.Dist +
+                     road.dist.clean + viewshed.clean + Sheep_Presence +
+                        offset(log(Operation)) + (1|Camera),
+                      data = rai_bobcat2, na.action = "na.fail")
+
+AIC(trial.model) ## AIC is 454.5723
+vif(trial.model) ## All except Sheep_Presence have a VIF < 2, Sheep_Presence is 2.023585
+
+Dredge.Table2 <- dredge(trial.model)
+
 ```
 
 
