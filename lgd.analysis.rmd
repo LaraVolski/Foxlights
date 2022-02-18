@@ -1,0 +1,106 @@
+---
+title: "lgd.analysis"
+author: "Lara Volski"
+date: "2/17/2022"
+output: html_document
+---
+
+
+## Part 1) Setting Up
+
+### Read in record table CSV
+```{r record.table}
+phase1.record.table <- read.csv("lyru_recordtable_phase1_15min.csv")
+phase2.record.table <- read.csv("lyru_recordtable_phase2_15min.csv")
+phase3.record.table <- read.csv("lyru_recordtable_phase3_15min.csv")
+phase4.record.table <- read.csv("lyru_recordtable_phase4_15min.csv")
+```
+
+### import camera phase operation dates
+```{r}
+phase1.cam.operations <- read.csv("lyru_camera_operation_phase1.csv", header=T)
+phase2.cam.operations <- read.csv("lyru_camera_operation_phase2.csv", header=T)
+phase3.cam.operations <- read.csv("lyru_camera_operation_phase3.csv", header=T)
+phase4.cam.operations <- read.csv("lyru_camera_operation_phase4.csv", header=T)
+```
+
+
+### Plot Species Richness across cameras by lat and long
+```{r species.richness.plot}
+detectionMaps(CTtable = phase1.cam.operations, 
+              recordTable = phase1.record.table, 
+              stationCol = "Camera", 
+              Xcol = "Latitude", 
+              Ycol = "Longitude",
+              richnessPlot = TRUE,
+              printLabels = TRUE)
+
+# remove species that we don't care about (here, removing birds, opposum, nothing, mice, pigs, and squirrels) 
+for (Species in c("Bat", "Bird", "Deer", "Squirrel", "Skunk", "Rodent", "Raccoon", "Jack_Rabbit", "Vehicle")) {
+  phase1.record.table <- phase1.record.table[phase1.record.table$Species != Species, ]
+}
+```
+
+### RAI
+```{r RAI}
+# calculate RAI for phase 1
+
+# change camera, phase, and species to factor
+phase1.record.table$Camera <- as.factor(phase1.record.table$Camera)
+phase1.record.table$Phase <- as.factor(phase1.record.table$Phase)
+phase1.record.table$Species <- droplevels(as.factor(phase1.record.table$Species))
+
+# calculate number of observations of each species at each camera in each phase
+rai.lgd <- phase1.record.table %>%
+  dplyr::group_by(Species, Camera, Phase, .drop = FALSE) %>%
+  dplyr::summarise(Detections = n()) 
+
+# merge with record table
+rai.lgd <- merge(rai.lgd, phase1.cam.operations)
+
+# calculate RAI
+rai.lgd$RAI <- rai.lgd$Detections / rai.lgd$Operation
+
+# remove records where camera was operating for <10 days
+for (i in 1:nrow(rai.lgd)) {
+  if(rai.lgd$Operation[i] < 10) {
+    rai.lgd$Detections[i] <- NA
+    rai.lgd$RAI[i] <- NA
+  } 
+}
+
+# calculate RAI for phase 2
+# change camera, phase, and species to factor
+phase2.record.table$Camera <- as.factor(phase2.record.table$Camera)
+phase2.record.table$Phase <- as.factor(phase2.record.table$Phase)
+phase2.record.table$Species <- droplevels(as.factor(phase2.record.table$Species))
+
+# calculate number of observations of each species at each camera in each phase
+rai.lgd2 <- phase2.record.table %>%
+  dplyr::group_by(Species, Camera, Phase, .drop = FALSE) %>%
+  dplyr::summarise(Detections = n()) 
+
+# merge with record table
+rai.lgd2 <- merge(rai.lgd2, phase2.cam.operations)
+
+# calculate RAI
+rai.lgd2$RAI <- rai.lgd2$Detections / rai.lgd2$Operation
+
+# remove records where camera was operating for <10 days
+for (i in 1:nrow(rai.lgd)) {
+  if(rai.lgd2$Operation[i] < 10) {
+    rai.lgd2$Detections[i] <- NA
+    rai.lgd2$RAI[i] <- NA
+  } 
+}
+
+test <- merge(rai.lgd, rai.lgd2, by = 'Camera')
+```
+
+Test
+```{r}
+
+ggplot(subset(rai.lgd, Species == "LYRU"), aes(x = Foxlight, y = RAI*35, fill = Foxlight)) +
+  geom_boxplot(alpha=2)
+            
+```

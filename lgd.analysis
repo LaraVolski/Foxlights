@@ -1,0 +1,108 @@
+---
+title: "LGD_ANALYSIS"
+author: "Lara Volski"
+date: "2/17/2022"
+output: html_document
+---
+
+
+## Part 1) Setting Up
+
+### Read in record table CSV
+```{r record.table}
+phase1.record.table <- read.csv("lyru_recordtable_phase1_15min.csv")
+```
+
+### import camera phase operation dates
+```{r}
+phase1.cam.operations <- read.csv("lyru_camera_operation_phase1.csv", header=T)
+```
+
+
+### Plot Species Richness across cameras by lat and long
+```{r species.richness.plot}
+detectionMaps(CTtable = phase1.cam.operations, 
+              recordTable = phase1.record.table, 
+              stationCol = "Camera", 
+              Xcol = "Latitude", 
+              Ycol = "Longitude",
+              richnessPlot = TRUE,
+              printLabels = TRUE)
+
+# remove species that we don't care about (here, removing birds, opposum, nothing, mice, pigs, and squirrels) 
+for (Species in c("Bat", "Bird", "Deer", "Squirrel", "Skunk", "Rodent", "Raccoon", "Jack_Rabbit", "Vehicle")) {
+  phase1.record.table <- phase1.record.table[phase1.record.table$Species != species, ]
+}
+```
+
+### RAI
+```{r RAI}
+# calculate RAI for each period
+
+# change camera, phase, and species to factor
+phase1.record.table$Camera <- as.factor(phase1.record.table$Camera)
+phase1.record.table$Species <- droplevels(as.factor(phase1.record.table$Species))
+
+# calculate number of observations of each species at each camera in each phase
+rai <- phase1.record.table %>%
+  dplyr::group_by(Species, Camera, .drop = FALSE) %>%
+  dplyr::summarise(Detections = n()) 
+
+rai2 <- phase1.record.table %>%
+  dplyr::group_by(Species, .drop = FALSE) %>%
+  dplyr::summarise(Detections = n())
+
+# merge with record table
+rai <- merge(rai, phase1.cam.operations)
+
+# calculate RAI
+rai$RAI <- rai$Detections / rai$Operation
+
+# remove records where camera was operating for <10 days
+for (i in 1:nrow(rai)) {
+  if(rai$Operation[i] < 10) {
+    rai$Detections[i] <- NA
+    rai$RAI[i] <- NA
+  } 
+}
+
+# join raster metadata
+#nrai <- left_join(rai, metadata.raster)
+
+#### now just calculate RAI at each camera, ACROSS ALL PHASES
+phase1.cam.operations.acrossphases <- read.csv("camera_operation_dates_2020.csv")
+# calculate number of observations of each species at each camera
+rai.acrossphases <- record.table.15min %>%
+  dplyr::group_by(Species, Camera, .drop = FALSE) %>%
+  dplyr::summarise(Detections = n()) 
+# merge with record table
+rai.acrossphases <- merge(rai.acrossphases, cam_operations.acrossphases)
+# calculate RAI
+rai.acrossphases$RAI <- rai.acrossphases$Detections / rai.acrossphases$Operation
+# join with metadata
+rai.acrossphases <- left_join(rai.acrossphases, metadata.raster)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

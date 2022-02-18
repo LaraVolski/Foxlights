@@ -366,7 +366,7 @@ vif(trial.model)
 
 trial.model <- lmer(Detections ~ Foxlight + Dogs_Scaled +
                       Dist.Water + Slope + Fence.Dist +
-                     road.dist.clean + viewshed.clean + Sheep_Presence +
+                     road.dist.clean + viewshed.clean +
                         offset(log(Operation)) + (1|Camera),
                       data = rai_bobcat2, na.action = "na.fail")
 
