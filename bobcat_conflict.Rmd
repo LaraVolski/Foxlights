@@ -373,3 +373,24 @@ colMeans(bsOut)
 bs <- as.vector(bsOut[,2])
 (bsCI_inout <- bootCI(Dhats[2], bs)) 
 ```
+
+```{r}
+ggplot(subset(rai, Species == "LYRU"), aes(x = Sheep_Presence, y = RAI*35, by = Camera)) +
+  geom_boxplot()
+  
+  
+  
+  ggplot(subset(rai_bobcat, Species == "LYRU"), aes(x = Sheep_Presence, y = RAI*35, fill = Sheep_Presence, by = Camera)) +
+  geom_boxplot(alpha=2) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  scale_x_discrete(labels = c("No", "Yes")) +
+ # geom_jitter() +
+  labs(x ="Sheep Present", y = "Relative Bobcat Activity (detections/phase)") +
+  ## scale_y_continuous(labels = mult_format()) +
+  scale_fill_manual(values=c("cadetblue4", "orange1"))
+  
+
+
+```
+

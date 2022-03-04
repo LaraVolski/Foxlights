@@ -5,7 +5,6 @@ date: "2/17/2022"
 output: html_document
 ---
 
-
 ## Part 1) Setting Up
 
 ### Read in record table CSV
@@ -14,6 +13,18 @@ phase1.record.table <- read.csv("lyru_recordtable_phase1_15min.csv")
 phase2.record.table <- read.csv("lyru_recordtable_phase2_15min.csv")
 phase3.record.table <- read.csv("lyru_recordtable_phase3_15min.csv")
 phase4.record.table <- read.csv("lyru_recordtable_phase4_15min.csv")
+
+write.csv(subset(phase1.record.table, Species == c("Bobcat", "Dog", "Sheep")), "recordtable_phase1_bobcats&dogs.csv", row.names = T)
+write.csv(subset(phase2.record.table, Species == c("Bobcat", "Dog", "Sheep")), "recordtable_phase2_bobcats&dogs.csv", row.names = T)
+write.csv(subset(phase3.record.table, Species == c("Bobcat", "Dog", "Sheep")), "recordtable_phase3_bobcats&dogs.csv", row.names = T)
+write.csv(subset(phase4.record.table, Species == c("Bobcat", "Dog", "Sheep")), "recordtable_phase4_bobcats&dogs.csv", row.names = T)
+
+phase1.recordtable <- read.csv("recordtable_phase1_bobcats&dogs.csv")
+phase2.recordtable <- read.csv("recordtable_phase2_bobcats&dogs.csv")
+phase3.recordtable <- read.csv("recordtable_phase3_bobcats&dogs.csv")
+phase4.recordtable <- read.csv("recordtable_phase4_bobcats&dogs.csv")
+
+master_recordtable <- read.csv("master_recordtable.csv")
 ```
 
 ### import camera phase operation dates
@@ -87,20 +98,79 @@ rai.lgd2 <- merge(rai.lgd2, phase2.cam.operations)
 rai.lgd2$RAI <- rai.lgd2$Detections / rai.lgd2$Operation
 
 # remove records where camera was operating for <10 days
-for (i in 1:nrow(rai.lgd)) {
+for (i in 1:nrow(rai.lgd2)) {
   if(rai.lgd2$Operation[i] < 10) {
     rai.lgd2$Detections[i] <- NA
     rai.lgd2$RAI[i] <- NA
   } 
 }
 
-test <- merge(rai.lgd, rai.lgd2, by = 'Camera')
+# calculate RAI for phase 3
+
+# change camera, phase, and species to factor
+phase3.record.table$Camera <- as.factor(phase3.record.table$Camera)
+phase3.record.table$Phase <- as.factor(phase3.record.table$Phase)
+phase3.record.table$Species <- droplevels(as.factor(phase3.record.table$Species))
+
+# calculate number of observations of each species at each camera in each phase
+rai.lgd3 <- phase3.record.table %>%
+  dplyr::group_by(Species, Camera, Phase, .drop = FALSE) %>%
+  dplyr::summarise(Detections = n()) 
+
+# merge with record table
+rai.lgd3 <- merge(rai.lgd3, phase3.cam.operations)
+
+# calculate RAI
+rai.lgd3$RAI <- rai.lgd3$Detections / rai.lgd3$Operation
+
+# remove records where camera was operating for <10 days
+for (i in 1:nrow(rai.lgd3)) {
+  if(rai.lgd3$Operation[i] < 10) {
+    rai.lgd3$Detections[i] <- NA
+    rai.lgd3$RAI[i] <- NA
+  } 
+}
+
+# calculate RAI for phase 4
+
+# change camera, phase, and species to factor
+phase4.record.table$Camera <- as.factor(phase4.record.table$Camera)
+phase4.record.table$Phase <- as.factor(phase4.record.table$Phase)
+phase4.record.table$Species <- droplevels(as.factor(phase4.record.table$Species))
+
+# calculate number of observations of each species at each camera in each phase
+rai.lgd4 <- phase4.record.table %>%
+  dplyr::group_by(Species, Camera, Phase, .drop = FALSE) %>%
+  dplyr::summarise(Detections = n()) 
+
+# merge with record table
+rai.lgd4 <- merge(rai.lgd4, phase4.cam.operations)
+
+# calculate RAI
+rai.lgd4$RAI <- rai.lgd4$Detections / rai.lgd4$Operation
+
+# remove records where camera was operating for <10 days
+for (i in 1:nrow(rai.lgd4)) {
+  if(rai.lgd4$Operation[i] < 10) {
+    rai.lgd4$Detections[i] <- NA
+    rai.lgd4$RAI[i] <- NA
+  } 
+}
 ```
 
-Test
+### Upload cleaned up dataset
 ```{r}
-
-ggplot(subset(rai.lgd, Species == "LYRU"), aes(x = Foxlight, y = RAI*35, fill = Foxlight)) +
-  geom_boxplot(alpha=2)
-            
+lgd_bobcat_lv <- read.csv("lgd_bobcat_lv.csv", header=T)
 ```
+
+# Question 1
+```{r}
+ggplot(subset(master_recordtable, Species == "Bobcat"), aes(x = Species, y = Time)) +
+  geom_point() + geom_line(color="black") +
+  facet_wrap(~ Camera) +
+  scale_x_discrete(label=function(x) abbreviate(x, minlength=1)) +
+  labs(title = "LYRU RAI by Foxlight Presence and Camera Site") +
+  ggsave("figures/coyote_RAI_by_camera_site.png", width = 6, height = 4)
+```
+
+
